@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
   //set dest address
   dst.sin_family = AF_INET;
   dst.sin_port = htons(80);
-  dst.sin_addr.s_addr = inet_addr("10.0.0.88");  
+  dst.sin_addr.s_addr = inet_addr("74.125.225.129");  
 
   tcp->source = htons(34805);
   tcp->dest = htons(80);
