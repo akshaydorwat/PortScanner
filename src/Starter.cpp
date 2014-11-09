@@ -6,6 +6,7 @@
 
 #include "Logger.hpp"
 #include "PortScannerUtils.hpp"
+#include "PacketScanner.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -14,6 +15,7 @@
 
 #include <inttypes.h>
 #include <getopt.h>
+#include <pcap.h>
 
 using namespace std;
 
@@ -206,7 +208,11 @@ int main (int argc, char **argv)
 	l->addOutputStream(&log_file, ERROR, string("%F %T"));
 
 	/* parse command line arguments */
-	int ret = parse_args(argc, argv);
-	if(!ret) exit(EXIT_FAILURE);
+	//int ret = parse_args(argc, argv);
+	//if(!ret) exit(EXIT_FAILURE);
+
+	PacketScanner* packetScanner = PacketScanner::getPacketScanner();
+	pcap_t* pd = packetScanner->init();
+	if (!pd) exit(EXIT_FAILURE);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
