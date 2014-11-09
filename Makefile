@@ -8,7 +8,7 @@ OBJ = \
 Starter.o\
 Logger.o\
 PortScannerUtils.o\
-PacketScanner.o
+PacketScanner.o\
 PacketFactory.o\
 Mutex.o\
 SYNscan.o\

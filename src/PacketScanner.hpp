@@ -5,7 +5,7 @@
  */
 
 #include <string>
-#include <vector>
+#include <map>
 
 #include <pcap.h>
 
@@ -18,6 +18,7 @@ class PacketScanner
 {
 	private:
 		static PacketScanner* packetScanner;
+		map<int, void(*)()> callbackMap;
 
 		PacketScanner(){};								// private constructor
 		PacketScanner(PacketScanner const&){};						// private copy constructor
@@ -26,4 +27,9 @@ class PacketScanner
         public:
 		static PacketScanner* getPacketScanner();	// obtain the singleton instance
 		pcap_t* init();					// initialize on default device
+		void scanForever(pcap_t *);
+
+		void registerCallback(int socket_fd, void (*function));
+		void unregisterCallback(int socket_fd);
+		static void makeCallbacks(u_char *usr, const struct pcap_pkthdr *pkthdr, const u_char *pktptr);
 };

@@ -16,6 +16,7 @@
 // user defined header
 #include "Logger.hpp"
 #include "PortScannerUtils.hpp"
+#include "PacketScanner.hpp"
 
 #define DEFAULT_NUM_OF_THREAD 1
 

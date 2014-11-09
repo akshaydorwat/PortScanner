@@ -4,20 +4,13 @@
  *	Date   : 11-4-2014
  */
 
-#include "Logger.hpp"
-#include "PortScannerUtils.hpp"
-#include "PacketScanner.hpp"
 #include "Starter.hpp"
-
-#include <inttypes.h>
-#include <getopt.h>
-#include <pcap.h>
 
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-const string LOGFILE = "LOG.log";
-const vector<string> KNOWN_SCANS = {"SYN", "NULL", "FIN", "XMAS", "ACK", "UDP"};
+//const string LOGFILE = "LOG.log";
+//const vector<string> KNOWN_SCANS = {"SYN", "NULL", "FIN", "XMAS", "ACK", "UDP"};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void show_help()
@@ -187,7 +180,7 @@ bool parse_args(int argc, char **argv, struct inputData *data)
 		LOG(DEBUG, to_string( numOfThreads));
 		data->numOfThreads = numOfThreads;
 	}else{
-		LOG (DEBUG, to_string(DEFAULT_NUM_OF_THREAD) + " (default)")
+		LOG (DEBUG, to_string(DEFAULT_NUM_OF_THREAD) + " (default)");
 		data->numOfThreads = DEFAULT_NUM_OF_THREAD;
 	}
 	return numOpts > 0;
@@ -205,7 +198,7 @@ int main (int argc, char **argv)
 	l->addOutputStream(&log_file, ERROR, string("%F %T"));
 
 	/* parse command line arguments */
-	int ret = parse_args(argc, argv);
+	int ret = parse_args(argc, argv, &data);
 	if(!ret) exit(EXIT_FAILURE);
 
 	PacketScanner* packetScanner = PacketScanner::getPacketScanner();

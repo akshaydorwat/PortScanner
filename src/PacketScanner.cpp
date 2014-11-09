@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <map>
 
 #include <pcap.h>
 #include <inttypes.h>
@@ -68,6 +69,57 @@ pcap_t* PacketScanner::init()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+void PacketScanner::scanForever(pcap_t *pd)
+{
+	int linktype;
 
+	// Determine the datalink layer type.
+	if ((linktype = pcap_datalink(pd)) < 0)
+	{
+		LOG(ERROR, "PacketScanner : Failed to extract link type. " + string(pcap_geterr(pd)));
+		return;
+	}
+
+	// Set the datalink layer header size.
+	switch (linktype)
+	{
+		case DLT_NULL:		// loopback
+			LOG(DEBUG, "PacketScanner : Link type : LOOPBACK");
+			break;
+
+		case DLT_EN10MB:	// ethernet
+			LOG(DEBUG, "PacketScanner : Link type : ETHERNET");
+			break;
+
+		default:		// unsupported
+			LOG(ERROR, "PacketScanner : Unsupported link type #" + to_string(linktype));
+			return;
+	}
+
+	// Start capturing packets.
+	if (pcap_loop(pd, 0, (pcap_handler) makeCallbacks, (u_char*) this) < 0)
+		LOG(ERROR, "PacketScanner : Error occurred while looping forever. " + string(pcap_geterr(pd)));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void PacketScanner::makeCallbacks(u_char *usr, const struct pcap_pkthdr *pkthdr, const u_char *pktptr)
+{
+	PacketScanner *pktScnr = (PacketScanner *) usr;
+	for(map<int, void(*)()>::iterator callbackFunction = pktScnr->callbackMap.begin(); callbackFunction != pktScnr->callbackMap.end(); callbackFunction++)
+	{
+		callbackFunction->second();//usr, pkthdr, pktptr);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void PacketScanner::registerCallback(int socket_fd, void (*function))
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void PacketScanner::unregisterCallback(int socket_fd)
+{
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
