@@ -1,6 +1,6 @@
 CC=g++
 CPFLAGS=-g -Wall -std=c++0x 
-LDFLAGS= -lpcap
+LDFLAGS= -lpcap -pthread
 
 VPATH = src
 
@@ -9,6 +9,14 @@ Starter.o\
 Logger.o\
 PortScannerUtils.o\
 PacketScanner.o
+PacketFactory.o\
+Mutex.o\
+SYNscan.o\
+FINscan.o\
+ACKscan.o\
+NULLscan.o\
+XMASscan.o\
+UDPscan.o
 
 BIN = portScanner
 
@@ -24,7 +32,7 @@ $(BIN): $(OBJ)
 	$(CC) $(LDFLAGS) -c $(CPFLAGS) -o $@ $<  
 
 clean:
-	rm -rf $(OBJ) $(BIN) portScanner.tar
+	rm -rf $(OBJ) $(BIN) portScanner.tar LOG.log
 
 tar:
 	tar -cvf portScanner.tar Makefile README src
