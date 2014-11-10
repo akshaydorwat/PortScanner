@@ -10,9 +10,13 @@
 
 #include "Scan.hpp"
 
+using namespace std;
+
 class SYNscan : public Scan {
 	
 public:
+	SYNscan( struct sockaddr_in &p_src, struct sockaddr_in &p_dst, string &type ) 
+		: Scan(p_src, p_dst, type){};
 	
 	void handle();
 	void filterCallback();

@@ -8,9 +8,6 @@
 
 using namespace std;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//const string LOGFILE = "LOG.log";
-//const vector<string> KNOWN_SCANS = {"SYN", "NULL", "FIN", "XMAS", "ACK", "UDP"};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void show_help()
@@ -53,7 +50,7 @@ vector<unsigned short> extractPorts(string portStr)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool parse_args(int argc, char **argv, struct inputData *data)
+bool parse_args(int argc, char **argv, struct InputData *data)
 {
 	static struct option long_options[] = {
 		{"help",     no_argument,         NULL,  'h' },	// --help
@@ -186,23 +183,78 @@ bool parse_args(int argc, char **argv, struct inputData *data)
 	return numOpts > 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void jobCreator(JobPool &pool, InputData &data){
+	
+	for(vector<sockaddr_in>::iterator i = data.ips.begin(); i != data.ips.end(); ++i){
+		sockaddr_in addr = *i;
+
+		for(vector<unsigned short>::iterator j = data.ports.begin(); j != data.ports.end(); ++j){
+			unsigned short port = *j;
+			
+			for(vector<string>::iterator k = data.scanTechniques.begin(); k != data.scanTechniques.end(); ++k){
+				string type = *k;
+				Scan *s;
+				
+				if(type.compare("SYN") == 0){
+					//s = new SYNscan();
+
+				} else if(type.compare("NULL") == 0){
+					//s = new NULLscan();
+					
+				} else if(type.compare("FIN") == 0){
+					//s = new FINscan();
+					
+				} else if(type.compare("XMAS") == 0){
+					//s = new XMASscan();
+					
+				} else if(type.compare("ACK") == 0){
+					//s = new ACKscan();
+					
+				} else if(type.compare("UDP") == 0){
+					//s = new UDPscan();
+
+				} else {
+					LOG(ERROR, "Scan type " + type + " not found");
+					continue;
+				}
+								
+				pool.queueJob(s);
+			}
+		}
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main (int argc, char **argv)
 {
 	/* Initialize Logger */
 	ofstream log_file (LOGFILE, ios::out | ios::trunc);
 	Logger *l = Logger::getInstance();
-	inputData data;
+	InputData data;
 
+	/*Log handlers*/
 	l->addOutputStream(&cout, ERROR, string("%F %T"));
 	l->addOutputStream(&log_file, ERROR, string("%F %T"));
 
 	/* parse command line arguments */
 	int ret = parse_args(argc, argv, &data);
-	if(!ret) exit(EXIT_FAILURE);
+	if(!ret){
+		exit(EXIT_FAILURE);
+	}
 
+	/*Packet scanner*/
 	PacketScanner* packetScanner = PacketScanner::getPacketScanner();
 	pcap_t* pd = packetScanner->init();
-	if (!pd) exit(EXIT_FAILURE);
+	if (pd == NULL){ 
+		exit(EXIT_FAILURE);
+	}
+
+	/*create Job pool */
+	JobPool pool(data.numOfThreads);
+	jobCreator(pool, data);
+	//pool.init();
+	//pool.delpool();
+	
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

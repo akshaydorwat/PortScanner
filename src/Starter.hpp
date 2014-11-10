@@ -17,6 +17,13 @@
 #include "Logger.hpp"
 #include "PortScannerUtils.hpp"
 #include "PacketScanner.hpp"
+#include "JobPool.hpp"
+#include "SYNscan.hpp"
+#include "ACKscan.hpp"
+#include "NULLscan.hpp"
+#include "XMASscan.hpp"
+#include "UDPscan.hpp"
+#include "FINscan.hpp"
 
 #define DEFAULT_NUM_OF_THREAD 1
 
@@ -31,7 +38,7 @@ const string LOGFILE = "LOG.log";
 const vector<string> KNOWN_SCANS = {"SYN", "NULL", "FIN", "XMAS", "ACK", "UDP"};
 
 // portscanner input data holder 
-struct inputData{
+struct InputData{
 	vector<string> scanTechniques;
 	vector<unsigned short> ports;
 	vector<sockaddr_in> ips;

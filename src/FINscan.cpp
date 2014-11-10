@@ -26,4 +26,4 @@ void FINscan::filterCallback(){
 
 void FINscan::reportStats(){
 
-}
+

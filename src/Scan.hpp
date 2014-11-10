@@ -19,18 +19,21 @@ class Scan
 {
 
 public:
+	
+	Scan( struct sockaddr_in &p_src, struct sockaddr_in &p_dst, string &type )
+		: src(p_src) , 	dst(p_dst) , scanType(type){};
+	
 	virtual ~Scan(){};
-
-	struct sockaddr_in src;
-	struct sockaddr_in dst;
-	string ScanType;
-	enum PORT_STATUS status;
 
 	virtual void handle() = 0;
 	virtual void filterCallback() = 0;   
 
 private:
 
+	struct sockaddr_in src;
+	struct sockaddr_in dst;
+	string scanType;
+	enum PORT_STATUS status;
 	int numOfPacketSent;
 	int numOfPacketReceived;
 	

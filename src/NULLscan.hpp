@@ -10,10 +10,14 @@
 
 #include "Scan.hpp"
 
+using namespace std;
+
 class NULLscan: public Scan{
   
 public:
-	
+	NULLscan( struct sockaddr_in &p_src, struct sockaddr_in &p_dst, string &type ) 
+		: Scan(p_src, p_dst, type){};
+
 	void handle();
 	void filterCallback();
 
