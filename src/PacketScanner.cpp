@@ -11,9 +11,12 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <functional>
 
 #include <pcap.h>
 #include <inttypes.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 using namespace std;
 
@@ -34,17 +37,46 @@ pcap_t* PacketScanner::init()
 	pcap_t* pd;
 	char errbuf[PCAP_ERRBUF_SIZE];	
 	uint32_t  devip, devnetmask;
+	int status;
 	struct bpf_program  bpf;
+	char *device;
+	pcap_if_t *alldevs;
+
+	// Obtain the default device name
+	if ((device = pcap_lookupdev(errbuf)) == NULL)
+	{
+		LOG (ERROR, "PacketScanner : Failed to obtain default network device. " + string(errbuf));
+		return NULL;
+	}
+	
+	// Obtain list of all available network devices
+	if ((status = pcap_findalldevs(&alldevs, errbuf)) != 0) 
+	{
+		LOG (ERROR, "PacketScanner : Failed to obtain all network devices. " + string(errbuf));
+		return NULL;
+	}
+	for(pcap_if_t *d=alldevs; d!=NULL; d=d->next) 
+	{
+		if (string(d->name) == string(device))
+		{
+			for(pcap_addr_t *a=d->addresses; a != NULL; a = a->next)
+			{
+				if(a->addr->sa_family == AF_INET)
+					deviceIp.sin_addr = ((struct sockaddr_in*)a->addr)->sin_addr;
+			}
+		}
+	}
+	pcap_freealldevs(alldevs);
 
 	// Open the device for live capture.
-	if ((pd = pcap_open_live(DEFAULT_DEVICE.c_str(), BUFSIZ, 1, 0, errbuf)) == NULL)
+	if ((pd = pcap_open_live(device, BUFSIZ, 1, 0, errbuf)) == NULL)
 	{
 		LOG(ERROR, "PacketScanner : Failed to open device: " + string(errbuf));
 		return NULL;
 	}
 
 	// Get network device source IP address and netmask.
-	if (pcap_lookupnet(DEFAULT_DEVICE.c_str(), &devip, &devnetmask, errbuf) < 0)
+	if (pcap_lookupnet(device, &devip, &devnetmask, errbuf) < 0)
 	{
 		LOG(ERROR, "PacketScanner : Failed to obtain n/w device info. " + string(errbuf));
 		return NULL;
@@ -64,7 +96,7 @@ pcap_t* PacketScanner::init()
 		return NULL;
 	}
 
-	LOG (DEBUG, "PacketScanner : Initialized.");
+	LOG (DEBUG, "PacketScanner : Initialized on " + string(device) + " IP address " + string(inet_ntoa(deviceIp.sin_addr)));
 	return pd;
 }
 
@@ -83,11 +115,13 @@ void PacketScanner::scanForever(pcap_t *pd)
 	// Set the datalink layer header size.
 	switch (linktype)
 	{
-		case DLT_NULL:		// loopback
-			LOG(DEBUG, "PacketScanner : Link type : LOOPBACK");
-			break;
+		/*case DLT_NULL:		// loopback
+		  linkHeaderLength = 4;
+		  LOG(DEBUG, "PacketScanner : Link type : LOOPBACK");
+		  break;*/
 
 		case DLT_EN10MB:	// ethernet
+			linkHeaderLength = 14;
 			LOG(DEBUG, "PacketScanner : Link type : ETHERNET");
 			break;
 
@@ -105,21 +139,37 @@ void PacketScanner::scanForever(pcap_t *pd)
 void PacketScanner::makeCallbacks(u_char *usr, const struct pcap_pkthdr *pkthdr, const u_char *pktptr)
 {
 	PacketScanner *pktScnr = (PacketScanner *) usr;
-	for(map<int, void(*)()>::iterator callbackFunction = pktScnr->callbackMap.begin(); callbackFunction != pktScnr->callbackMap.end(); callbackFunction++)
+
+	// invoke all the registered callbacks
+	for(map<int, function<void(const u_char*)>>::iterator itr = pktScnr->callbackMap.begin(); \
+			itr != pktScnr->callbackMap.end(); ++itr)
 	{
-		callbackFunction->second();//usr, pkthdr, pktptr);
+		itr->second(pktptr);
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void PacketScanner::registerCallback(int socket_fd, void (*function))
+bool PacketScanner::registerCallback(int socket_fd, function<void(const u_char*)> fxn)
 {
+	// if not already registered, register a new callback against the requisite socket
+	if (callbackMap.count(socket_fd) == 0)
+	{
+		callbackMap[socket_fd] = fxn;
+		LOG (DEBUG, "PacketScanner : Registered callback for socket#" + to_string(socket_fd));
+		return true;
+	}
+	else
+	{
+		LOG(WARNING, "PacketScanner : Erroneous overwrite of callback for socket#" + to_string(socket_fd) + " declined !!!");
+		return false;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void PacketScanner::unregisterCallback(int socket_fd)
+bool PacketScanner::unregisterCallback(int socket_fd)
 {
-
+	// unregister the callback associated with the requisite socket
+	return callbackMap.erase(socket_fd) == 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
