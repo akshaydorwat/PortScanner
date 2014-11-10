@@ -6,8 +6,13 @@
 
 #include "Starter.hpp"
 
+using namespace std;
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//const string LOGFILE = "LOG.log";
+//const vector<string> KNOWN_SCANS = {"SYN", "NULL", "FIN", "XMAS", "ACK", "UDP"};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void show_help()
 {
 	string help = "\n portScanner: Port-scan utility. \n"
@@ -170,12 +175,12 @@ bool parse_args(int argc, char **argv, struct inputData *data)
 	}
 	data->scanTechniques = scanTechniques;
 
-	if (numOfThreads > 1){
-		LOG(DEBUG, "========== Desired speedup ==========");
+	LOG(DEBUG, "========== Desired speedup ==========");
+	if (numOfThreads > 1){	
 		LOG(DEBUG, to_string( numOfThreads));
 		data->numOfThreads = numOfThreads;
 	}else{
-		LOG(INFO, "Using default speed up as 1 ");
+		LOG (DEBUG, to_string(DEFAULT_NUM_OF_THREAD) + " (default)");
 		data->numOfThreads = DEFAULT_NUM_OF_THREAD;
 	}
 	return numOpts > 0;
@@ -196,6 +201,8 @@ int main (int argc, char **argv)
 	int ret = parse_args(argc, argv, &data);
 	if(!ret) exit(EXIT_FAILURE);
 
-	
+	PacketScanner* packetScanner = PacketScanner::getPacketScanner();
+	pcap_t* pd = packetScanner->init();
+	if (!pd) exit(EXIT_FAILURE);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

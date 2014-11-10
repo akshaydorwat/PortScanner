@@ -11,6 +11,7 @@ Mutex.o\
 ConditionVariable.o\
 JobPool.o\
 PortScannerUtils.o\
+PacketScanner.o\
 PacketFactory.o\
 SYNscan.o\
 FINscan.o\
@@ -40,4 +41,4 @@ tar:
 	tar -cvf portScanner.tar Makefile README src
 
 run:
-	./portScanner --ports 1-2,6-10,100,120,150-170 --ip 74.125.225.68 --prefix 127.0.0.1/30 --file ./ipAddresses.txt --speedup 5 --scan UDP SYN
+	sudo ./portScanner --ports 1-2,6-10,100,120,150-170 --ip 74.125.225.68 --prefix 127.0.0.1/30 --file ./ipAddresses.txt --speedup 5 --scan UDP SYN
