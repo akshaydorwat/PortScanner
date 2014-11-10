@@ -11,9 +11,6 @@
 JobPool::JobPool(int size){
 	numOfThreads = size;
 	state = STOPPED;
-		
-	// little performance improvment measure
-	pool.resize(DEFAULT_DEQUE_SIZE);
 }
 
 JobPool::~JobPool(){
