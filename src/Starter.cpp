@@ -152,6 +152,7 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 		LOG(DEBUG, ips[i]);
 		struct sockaddr_in addr;
 		addr.sin_addr.s_addr = inet_addr(ips[i].c_str());
+		addr.sin_family = AF_INET;
 		data->ips.push_back(addr);
 	}
 	
@@ -184,35 +185,38 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void jobCreator(JobPool &pool, InputData &data){
+void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 	
+	in.sin_family = AF_INET;
+
 	for(vector<sockaddr_in>::iterator i = data.ips.begin(); i != data.ips.end(); ++i){
-		sockaddr_in addr = *i;
+		struct sockaddr_in addr = *i;
 
 		for(vector<unsigned short>::iterator j = data.ports.begin(); j != data.ports.end(); ++j){
 			unsigned short port = *j;
-			
+			addr.sin_port = htons(port);
+
 			for(vector<string>::iterator k = data.scanTechniques.begin(); k != data.scanTechniques.end(); ++k){
 				string type = *k;
 				Scan *s;
 				
 				if(type.compare("SYN") == 0){
-					//s = new SYNscan();
-
+					s = new SYNscan(in, addr, type);
+					
 				} else if(type.compare("NULL") == 0){
-					//s = new NULLscan();
+					s = new NULLscan(in, addr, type);
 					
 				} else if(type.compare("FIN") == 0){
-					//s = new FINscan();
+					s = new FINscan(in, addr, type);
 					
 				} else if(type.compare("XMAS") == 0){
-					//s = new XMASscan();
+					s = new XMASscan(in, addr, type);
 					
 				} else if(type.compare("ACK") == 0){
-					//s = new ACKscan();
+					s = new ACKscan(in, addr, type);
 					
 				} else if(type.compare("UDP") == 0){
-					//s = new UDPscan();
+					s = new UDPscan(in, addr, type);
 
 				} else {
 					LOG(ERROR, "Scan type " + type + " not found");
@@ -252,9 +256,9 @@ int main (int argc, char **argv)
 
 	/*create Job pool */
 	JobPool pool(data.numOfThreads);
-	jobCreator(pool, data);
-	//pool.init();
-	//pool.delpool();
+	pool.init();
+	jobCreator(pool, data, packetScanner->deviceIp);
+	pool.delPool(false);
 	
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

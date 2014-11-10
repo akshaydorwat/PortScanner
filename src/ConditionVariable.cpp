@@ -15,7 +15,7 @@ ConditionVariable::~ConditionVariable(){
 	pthread_cond_destroy(&condVar);
 }
 	
-void ConditionVariable::wait(Mutex m){
+void ConditionVariable::wait(Mutex &m){
 	pthread_cond_wait(&condVar, m.getPtr());
 }
 	

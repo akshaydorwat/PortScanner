@@ -17,7 +17,7 @@ void UDPscan::send(){
 }
 
 void UDPscan::handle(){
-
+	LOG(DEBUG, "HI from UDP");
 }
 
 void UDPscan::filterCallback(){

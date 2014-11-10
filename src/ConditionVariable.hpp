@@ -18,7 +18,7 @@ public:
 	
 	~ConditionVariable();
 	
-	void wait(Mutex m);
+	void wait(Mutex &m);
 	
 	void signal();
 

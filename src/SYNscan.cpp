@@ -16,7 +16,7 @@ void SYNscan::send(){
 }
 
 void SYNscan::handle(){
-
+	LOG(DEBUG, "HI from SYN");
 }
 
 void SYNscan::filterCallback(){

@@ -20,15 +20,17 @@ Mutex::~Mutex(){
 }
 
 void Mutex::lock(){
-	
+
     pthread_mutex_lock(&mLock);
-    locked = true;
+	locked = true;
+
 }
 
 void Mutex::unlock(){
-    
+
+	locked = false;
 	pthread_mutex_unlock(&mLock);
-    locked = false;
+
 }
 
 pthread_mutex_t * Mutex::getPtr(){

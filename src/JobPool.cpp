@@ -6,15 +6,18 @@
  **/
 
 #include "JobPool.hpp"
-
+#include "iostream"
 
 JobPool::JobPool(int size){
 	numOfThreads = size;
 	state = STOPPED;
+	done = false;
 }
 
 JobPool::~JobPool(){
-	
+	if (state != STOPPED) {
+		delPool(true);
+	}
 }
 	
 bool JobPool::init(){
@@ -38,6 +41,9 @@ bool JobPool::init(){
 		// push threads in vector
 		threads.push_back(id);
 	}
+	
+	//change the state
+	state = STARTED;
 	LOG(INFO, "Created thread pool with size : " + to_string(numOfThreads));
 	
 	return true;
@@ -57,10 +63,10 @@ void JobPool::queueJob(Scan *s){
 	// release lock
 	mutex.unlock();
 
-	LOG(DEBUG, "Job added sucessfully, Total jobs : " + to_string((int)pool.size()));
+	//LOG(DEBUG, "Job added sucessfully, Total jobs : " + to_string((int)pool.size()));
 }
 
-bool JobPool::delpool(){
+bool JobPool::delPool(bool forceful){
 	
 	int ret;
 	int i;
@@ -68,7 +74,11 @@ bool JobPool::delpool(){
 	// acquire lock
 	mutex.lock();
 	// change state
-	state = STOPPED;
+	if(forceful){
+		state = STOPPED;
+	}else{
+		done = true;
+	}
 	// release lock
 	mutex.unlock();
 
@@ -85,18 +95,31 @@ bool JobPool::delpool(){
 	return true;
 }
 	
+void JobPool::joinAll(){
+	int i, ret;
+	for(i=0; i< numOfThreads; i++ ){
+		ret = pthread_join(threads[i], NULL);
+		if(ret != 0){
+			LOG(ERROR, "Error while joining the thread");
+		}
+	}
+}
 
 void JobPool::run(){
 	
 	Scan *s;
-
+   
 	while(true){
+		
+		// Check the pool status if empty wait 
 		mutex.lock();
-		while((state != STOPPED) && (pool.empty())){
-			// TODO: It might cause error passing private variable to another class
-			LOG(DEBUG, "Thread waiting");
-			condVar.wait(mutex);
-			LOG(DEBUG, "Thread recieved signal");
+		while(pool.empty()){
+			if(done){
+				state = STOPPED;
+				break;
+			}else{
+				condVar.wait(mutex);
+			}
 		}
 
 		// Stop thread if state changed
@@ -109,7 +132,7 @@ void JobPool::run(){
 		s = pool.front();
 		pool.pop_front();
 		mutex.unlock();
-		
+	
 		// call actual function
 		s->handle();
 
@@ -119,5 +142,8 @@ void JobPool::run(){
 }
 
 void* JobPool::helper(void *arg){
+
+	JobPool *j = (JobPool*) arg;
+	j->run();
 	return NULL;
 }

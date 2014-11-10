@@ -21,7 +21,7 @@ static const string BASE_PACKET_FILTER = "tcp or udp or icmp";
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class PacketScanner
 {
-	private:
+private:
 		static PacketScanner* packetScanner;
 		map<int, function<void(const u_char*)>> callbackMap;
 
@@ -29,7 +29,7 @@ class PacketScanner
 		PacketScanner(PacketScanner const&){};						// private copy constructor
 		PacketScanner& operator=(PacketScanner const&){ return *packetScanner; };	// private assignment operator
 
-        public:
+public:
 		uint8_t linkHeaderLength;
 		struct sockaddr_in deviceIp;
 
