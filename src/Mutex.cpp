@@ -30,3 +30,7 @@ void Mutex::unlock(){
 	pthread_mutex_unlock(&mLock);
     locked = false;
 }
+
+pthread_mutex_t * Mutex::getPtr(){
+	return &mLock;
+}

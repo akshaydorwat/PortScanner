@@ -7,15 +7,18 @@ VPATH = src
 OBJ = \
 Starter.o\
 Logger.o\
+Mutex.o\
+ConditionVariable.o\
+JobPool.o\
 PortScannerUtils.o\
 PacketFactory.o\
-Mutex.o\
 SYNscan.o\
 FINscan.o\
 ACKscan.o\
 NULLscan.o\
 XMASscan.o\
 UDPscan.o
+
 
 BIN = portScanner
 
