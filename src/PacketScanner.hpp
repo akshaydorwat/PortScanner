@@ -6,9 +6,11 @@
 
 #include <string>
 #include <map>
+#include <functional>
 
 #include <pcap.h>
 #include <inttypes.h>
+#include <netinet/in.h>
 
 using namespace std;
 
@@ -20,8 +22,8 @@ static const string BASE_PACKET_FILTER = "tcp or udp or icmp";
 class PacketScanner
 {
 	private:
-		static PacketScanner* packetScanner;		
-		map<int, void(*)(PacketScanner*, const struct pcap_pkthdr*, const u_char*)> callbackMap;
+		static PacketScanner* packetScanner;
+		map<int, function<void(const u_char*)>> callbackMap;
 
 		PacketScanner(){};								// private constructor
 		PacketScanner(PacketScanner const&){};						// private copy constructor
@@ -29,12 +31,13 @@ class PacketScanner
 
         public:
 		uint8_t linkHeaderLength;
+		struct sockaddr_in deviceIp;
 
 		static PacketScanner* getPacketScanner();	// obtain the singleton instance
 		pcap_t* init();					// initialize on default device
 		void scanForever(pcap_t *);
 
-		bool registerCallback(int socket_fd, void (*function)(PacketScanner*, const struct pcap_pkthdr*, const u_char*));
+		bool registerCallback(int socket_fd, function<void(const u_char*)> fxn);
 		bool unregisterCallback(int socket_fd);
 		static void makeCallbacks(u_char *usr, const struct pcap_pkthdr *pkthdr, const u_char *pktptr);
 };
