@@ -197,8 +197,8 @@ void SYNscan::filterCallback(const u_char *packet){
 				tcp_hdr = (struct tcphdr *)((u_char*)icmp_ip_hdr+runner);
 				s_port = ntohs(tcp_hdr->source);
 				d_port = ntohs(tcp_hdr->dest);
-				LOG(DEBUG, "Source port :" + to_string((int)s_port));
-				LOG(DEBUG, "dest port :" + to_string((int)d_port));
+				//LOG(DEBUG, "Source port :" + to_string((int)s_port));
+				//LOG(DEBUG, "dest port :" + to_string((int)d_port));
 				if((memcmp(&d_port, &dst.sin_port, sizeof(uint16_t)) != 0) || 
 				   (memcmp(&s_port, &src.sin_port, sizeof(uint16_t)) != 0)){
 					return;
@@ -206,6 +206,7 @@ void SYNscan::filterCallback(const u_char *packet){
 				// set status 
 				numOfPacketReceived++;
 				status = FILTERED;
+				LOG(DEBUG, "UNREACHABLE HOST, Port is FILTERED");
 				break;
 
 			default:
