@@ -8,6 +8,10 @@
 
 #include "FINscan.hpp"
 
+void FINscan::createPacket(){
+
+}
+
 void FINscan::init(){
 
 }

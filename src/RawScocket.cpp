@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 	//set dest address
 	dst.sin_family = AF_INET;
 	dst.sin_port = htons(80);
-	dst.sin_addr.s_addr = inet_addr("74.125.225.129");  
+	dst.sin_addr.s_addr = inet_addr("10.0.0.88");  
 
 	tcp->source = htons(34805);
 	tcp->dest = htons(80);
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 
 	struct TCP_pseudo t;
 	t.saddr = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr;
-	t.daddr = inet_addr("74.125.225.129");
+	t.daddr = dst.sin_addr.s_addr;
 	t.reserve = 0;
 	t.protocol = 6;
 	t.len = htons(sizeof(struct tcphdr));

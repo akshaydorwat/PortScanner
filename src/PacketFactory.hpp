@@ -11,6 +11,7 @@
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <arpa/inet.h>
 
 // local lib
 #include "Logger.hpp"
@@ -18,6 +19,10 @@
 
 #define MAX_PORT 65535
 #define MIN_PORT 4096
+#define DEFAULT_SEQ_NO 2500
+#define DEFAULT_ACK_SEQ 0
+#define DEFAULT_WINDOW 29200
+#define DEFAULT_DATA_OFFSET 5
 
 using namespace std;
 
@@ -36,6 +41,12 @@ public:
   
 	// set option in packet
 	bool setOption(string option, void *val);
+
+	// get unused port 
+	static uint16_t getUnusedPort();
+
+	// free used ports
+	static void freeUsedPort(uint16_t port);
 
 private:
 	enum PROTOCOL protocol;
@@ -57,13 +68,6 @@ private:
 
 	// Genralized checksum calculator
 	uint16_t checksumCalculator (const void * addr, unsigned len, uint16_t init);
-
-	// get unused port 
-	static uint16_t getUnusedPort();
-
-	// free used ports
-	static void freeUsedPort(uint16_t port);
-	
 
 };
 

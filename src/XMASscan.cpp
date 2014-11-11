@@ -8,6 +8,10 @@
 
 #include "XMASscan.hpp"
 
+void XMASscan::createPacket(){
+
+}
+
 void XMASscan::init(){
 
 }

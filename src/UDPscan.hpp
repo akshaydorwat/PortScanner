@@ -26,5 +26,6 @@ private:
     void init();
     void send();
     void reportStats();
+void createPacket();
 };
 #endif

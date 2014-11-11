@@ -194,7 +194,7 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 
 		for(vector<unsigned short>::iterator j = data.ports.begin(); j != data.ports.end(); ++j){
 			unsigned short port = *j;
-			addr.sin_port = htons(port);
+			addr.sin_port = port;
 
 			for(vector<string>::iterator k = data.scanTechniques.begin(); k != data.scanTechniques.end(); ++k){
 				string type = *k;

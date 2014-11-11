@@ -8,6 +8,10 @@
 
 #include "NULLscan.hpp"
 
+void NULLscan::createPacket(){
+
+}
+
 void NULLscan::init(){
 
 }

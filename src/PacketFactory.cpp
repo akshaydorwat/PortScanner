@@ -41,13 +41,11 @@ bool PacketFactory::setOptionTCP(string &option, void *val){
 	// source port
 	if(option.compare("src_port") == 0){
 		uint16_t *port = (uint16_t*)val;
-		*port  = PacketFactory::getUnusedPort();
-		LOG(DEBUG, "Source Port : " + to_string(*port));
 		tcp->source = htons(*port);
 	} else
 
 	// destination port
-	if(option.compare("src_port") == 0){
+	if(option.compare("dst_port") == 0){
 		uint16_t *port = (uint16_t*)val;
 		tcp->dest = htons(*port);
 	} else
@@ -67,7 +65,7 @@ bool PacketFactory::setOptionTCP(string &option, void *val){
 	// data offset
 	if(option.compare("doff") == 0){
 		uint16_t *doff = (uint16_t*)val;
-		tcp->doff = htons(*doff);
+		tcp->doff = *doff;
 	}else
 
 	// finish flag
@@ -109,19 +107,17 @@ bool PacketFactory::setOptionTCP(string &option, void *val){
 	// checksum
 	if(option.compare("check") == 0){
 		struct TCP_pseudo_t *ptr = (struct TCP_pseudo_t *)val;
-		tcp->check = htons(tcpChecksome(ptr));
+		tcp->check = tcpChecksome(ptr);
 	}else
 	
 	// urgent sequence number
 	if(option.compare("urg_ptr") == 0){
 		uint16_t *urg_ptr = (uint16_t *)val;
 		tcp->urg_ptr = htons(*urg_ptr);
-	}else
-
-		{
-			LOG(ERROR, "Invalid Option TCP option :" + option);
-			return false;
-		}
+	}else{
+		LOG(ERROR, "Invalid Option TCP option :" + option);
+		return false;
+	}
 
 	return true;
 }
@@ -132,30 +128,28 @@ uint16_t PacketFactory::tcpChecksome(struct TCP_pseudo_t *ptr){
 	
 	sum = checksumCalculator(ptr, sizeof(struct TCP_pseudo_t), 0);
 	sum = checksumCalculator(packet, sizeof(struct tcphdr), (uint16_t)~sum);
-	
 	return sum;
-	
 }
+
 uint16_t PacketFactory::checksumCalculator (const void * addr, uint32_t len, uint16_t init) {
-  uint32_t sum;
-  const uint16_t * word;
-  sum = init;
-  word = (uint16_t *) addr;
-
-  while (len >= 2) {
-    sum += *(word++);
-    len -= 2;
+  uint32_t checksum;
+  // checksum is 16 bit one's complement
+  const uint16_t * ptr;
+  checksum = init;
+  ptr = (uint16_t *) addr;
+  
+  // calcualte the some over the packet
+  // len is in bytes and we are using uin16_t so reducing length by 2 
+  for(int i=len; i >= 2; i -= 2) {
+    checksum += *(ptr++);
   }
 
-  if (len > 0) {
-    uint16_t tmp;
+  // Tricky and interesting part we need to add 16 MSB to 16 LSB
+  checksum = (checksum >> 16) + (checksum & 0xffff);
+  checksum += (checksum >> 16);
 
-    *(uint8_t *)(&tmp) = *(uint8_t *)word;
-  }
-
-  sum = (sum >> 16) + (sum & 0xffff);
-  sum += (sum >> 16);
-  return ((uint16_t)~sum);
+  // complement ckecksum
+  return ((uint16_t)~checksum);
 }
 
 

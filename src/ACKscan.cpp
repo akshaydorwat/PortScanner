@@ -8,6 +8,10 @@
 
 #include "ACKscan.hpp"
 
+void ACKscan::createPacket(){
+
+}
+
 void ACKscan::init(){
 
 }
