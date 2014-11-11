@@ -253,7 +253,8 @@ int main (int argc, char **argv)
 	if (pd == NULL){ 
 		exit(EXIT_FAILURE);
 	}
-
+	pthread_t tid;
+	pthread_create(&tid, NULL, PacketScanner::scanForever, (void*)pd);
 	/*create Job pool */
 	JobPool pool(data.numOfThreads);
 	pool.init();

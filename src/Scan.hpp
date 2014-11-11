@@ -12,11 +12,14 @@
 #include "StatsReporter.hpp"
 #include "Logger.hpp"
 #include "PacketScanner.hpp"
+
 #include <sys/socket.h>
 #include <string.h>
 #include <unistd.h>
+#include <net/ethernet.h>
 
 #define MAX_TRY 3
+#define DEFAULT_SLEEP_TIME 1
 #define BUFFER_SIZE 4096
 
 using namespace std;
@@ -30,7 +33,12 @@ public:
 
 		// set unused port for source 
 		src.sin_port = PacketFactory::getUnusedPort();
+		// zero the memory
 		memset(buff,'\0' ,BUFFER_SIZE);
+		// initialise the stats
+		numOfPacketSent = 0;
+		numOfPacketReceived = 0;
+		
 	};
 	
 	virtual ~Scan(){

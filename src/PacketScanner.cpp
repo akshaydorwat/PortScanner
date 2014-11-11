@@ -101,15 +101,17 @@ pcap_t* PacketScanner::init()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void PacketScanner::scanForever(pcap_t *pd)
+void* PacketScanner::scanForever( void *p_pd)
 {
+	PacketScanner *pktScnr = PacketScanner::getPacketScanner();
+	pcap_t *pd = (pcap_t*) p_pd;
 	int linktype;
 
 	// Determine the datalink layer type.
 	if ((linktype = pcap_datalink(pd)) < 0)
 	{
 		LOG(ERROR, "PacketScanner : Failed to extract link type. " + string(pcap_geterr(pd)));
-		return;
+		return NULL;
 	}
 
 	// Set the datalink layer header size.
@@ -121,25 +123,26 @@ void PacketScanner::scanForever(pcap_t *pd)
 		  break;*/
 
 		case DLT_EN10MB:	// ethernet
-			linkHeaderLength = 14;
+			pktScnr->linkHeaderLength = 14;
 			LOG(DEBUG, "PacketScanner : Link type : ETHERNET");
 			break;
 
 		default:		// unsupported
 			LOG(ERROR, "PacketScanner : Unsupported link type #" + to_string(linktype));
-			return;
+			return NULL;
 	}
 
 	// Start capturing packets.
-	if (pcap_loop(pd, 0, (pcap_handler) makeCallbacks, (u_char*) this) < 0)
+	if (pcap_loop(pd, 0, (pcap_handler) makeCallbacks, (u_char*) pktScnr) < 0)
 		LOG(ERROR, "PacketScanner : Error occurred while looping forever. " + string(pcap_geterr(pd)));
+
+	return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void PacketScanner::makeCallbacks(u_char *usr, const struct pcap_pkthdr *pkthdr, const u_char *pktptr)
 {
 	PacketScanner *pktScnr = (PacketScanner *) usr;
-
 	// invoke all the registered callbacks
 	for(map<int, function<void(const u_char*)>>::iterator itr = pktScnr->callbackMap.begin(); \
 			itr != pktScnr->callbackMap.end(); ++itr)
