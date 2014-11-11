@@ -67,6 +67,9 @@ protected:
 	int numOfPacketReceived;
 	int sfd;
 
+	// basic filter
+	const u_char* basicFilter(const u_char *packet, uint8_t &protocol);
+	
 private:
 
 	// Initial setup 
@@ -80,6 +83,8 @@ private:
 
 	// create packet 
 	virtual void createPacket() = 0;
+	
+	
 };
 
 #endif

@@ -110,44 +110,25 @@ void SYNscan::handle(){
 }
 
 void SYNscan::filterCallback(const u_char *packet){
-	int runner = 0;
-	u_int16_t ether_type;
 	
-	{
-		// get the network layer protocol
-		const struct ether_header *header = (struct ether_header *) packet;
-		ether_type = ntohs(header->ether_type);
-		runner = runner + ETHER_HDR_LEN;
-	}
-		
-	//LOG(DEBUG, "Scanned link layer");
-	switch(ether_type){
-
-	case ETHERTYPE_IP:
-		// IP protocol
-		{
-			//LOG(DEBUG, "FOUnd IP packet");
-			const struct ip *header = (struct ip *) (packet + runner);
-			//verify IP v4 
-			if(header->ip_v != IPVERSION) 
-				return;
-			// compare the source and destination ip
-			uint32_t source = (header->ip_dst.s_addr);
-			uint32_t dest = (header->ip_src.s_addr);
-			
-			if((memcmp(&source, &src.sin_addr.s_addr, sizeof(uint32_t)) != 0 ) || 
-			   (memcmp(&dest, &dst.sin_addr.s_addr, sizeof(uint32_t)) != 0)){
-				return;
-			}
-			// get the transport level protocol
-			uint8_t protocol = header->ip_p;
-		
-		}
-		break;
-
-	default:
+	uint8_t protocol;
+	const u_char *retPtr;
+	
+	retPtr = basicFilter(packet, protocol);
+	if(retPtr == NULL){
 		return;
 	}
+
+	switch(protocol){
+    case IPPROTO_TCP:
+		
+		break;
+    case IPPROTO_ICMP:
+		transProtocolStr = "ICMP";
+		processIcmpProtocol((packet + runner));
+		break;
+    default :
+		return;
 }
 
 void SYNscan::reportStats(){
