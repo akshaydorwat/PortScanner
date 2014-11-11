@@ -11,7 +11,7 @@
 #include "PacketFactory.hpp"
 #include "StatsReporter.hpp"
 #include "Logger.hpp"
-
+#include "PacketScanner.hpp"
 #include <sys/socket.h>
 #include <string.h>
 #include <unistd.h>
@@ -43,7 +43,7 @@ public:
 	virtual void handle() = 0;
 
 	// Filter callback
-	virtual void filterCallback() = 0;   
+	virtual void filterCallback(const u_char *ptr) = 0;   
 	
 	// utility function 
 	void toString();

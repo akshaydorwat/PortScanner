@@ -24,7 +24,7 @@ void FINscan::handle(){
 
 }
 
-void FINscan::filterCallback(){
+void FINscan::filterCallback(const u_char *ptr){
 
 }
 

@@ -24,7 +24,7 @@ void NULLscan::handle(){
 
 }
 
-void NULLscan::filterCallback(){
+void NULLscan::filterCallback(const u_char *ptr){
 
 }
 

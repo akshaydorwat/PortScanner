@@ -19,7 +19,7 @@ public:
 		: Scan(p_src, p_dst, type){};
 
 	void handle();
-	void filterCallback();
+	void filterCallback(const u_char *ptr);
 
 private:
 

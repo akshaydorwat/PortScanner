@@ -21,10 +21,10 @@ void UDPscan::send(){
 }
 
 void UDPscan::handle(){
-	toString();
+	//toString();
 }
 
-void UDPscan::filterCallback(){
+void UDPscan::filterCallback(const u_char *ptr){
 
 }
 

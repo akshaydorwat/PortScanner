@@ -14,6 +14,9 @@
 
 using namespace std;
 
+#ifndef PACKET_SCANNER_HPP
+#define PACKET_SCANNER_HPP
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //static const string DEFAULT_DEVICE = "eth0";
 static const string BASE_PACKET_FILTER = "tcp or udp or icmp";
@@ -42,3 +45,5 @@ public:
 		static void makeCallbacks(u_char *usr, const struct pcap_pkthdr *pkthdr, const u_char *pktptr);
 };
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#endif

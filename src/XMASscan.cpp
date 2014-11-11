@@ -24,7 +24,7 @@ void XMASscan::handle(){
 
 }
 
-void XMASscan::filterCallback(){
+void XMASscan::filterCallback(const u_char *ptr){
 
 }
 

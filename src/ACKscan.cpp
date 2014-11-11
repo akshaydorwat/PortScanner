@@ -24,7 +24,7 @@ void ACKscan::handle(){
 
 }
 
-void ACKscan::filterCallback(){
+void ACKscan::filterCallback(const u_char *ptr){
 
 }
 

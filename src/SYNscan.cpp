@@ -78,17 +78,26 @@ void SYNscan::send(){
 	}
 }
 
+
+
 void SYNscan::handle(){
 
 	// Initialise the packet and socket
 	init();
 	
-	// Send packet
+	// register callback with filter
+	PacketScanner *scanner =  PacketScanner::getPacketScanner();	
+	scanner->registerCallback(sfd, bind(&Scan::filterCallback, this, std::placeholders::_1));
+	
+	// send packet
 	send();
+	while(1){
+		sleep(1);
+	}
 }
 
-void SYNscan::filterCallback(){
-
+void SYNscan::filterCallback(const u_char *ptr){
+	LOG(DEBUG, "**************FILTER CALLED ************");
 }
 
 void SYNscan::reportStats(){

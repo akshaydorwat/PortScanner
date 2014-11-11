@@ -21,14 +21,14 @@ public:
 	};
 	
 	void handle();
-	void filterCallback();
+	void filterCallback(const u_char *ptr);
 
 private:
 
     void init();
     void send();
     void reportStats();
-void createPacket();
+	void createPacket();
 };
 
 #endif
