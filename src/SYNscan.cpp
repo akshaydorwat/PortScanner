@@ -61,7 +61,7 @@ void SYNscan::init(){
 	}else{
 		LOG(DEBUG,"Socket Initialized");
 	}
-	// set IPHDRINCL fasle                                                                                        
+	// set IPHDRINCL fasle                                                                                       
 	if(setsockopt(sfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(zero)) < 0){
 		LOG(ERROR, "Unable to set socket option IPHDEINCL to Flase");
 		exit(-1);
