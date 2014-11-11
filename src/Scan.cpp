@@ -13,7 +13,7 @@ const u_char* Scan::basicFilter(const u_char *packet, uint8_t &protocol){
 	uint32_t source;
 	uint32_t dest;
 	struct ip *header;
-
+	
 	// get the network layer protocol
 	const struct ether_header *ether = (struct ether_header *) packet;
 	ether_type = ntohs(ether->ether_type);
@@ -35,7 +35,7 @@ const u_char* Scan::basicFilter(const u_char *packet, uint8_t &protocol){
 		}
 		// get transport level protocol
 		protocol = header->ip_p;
-		runner = runner + sizeof(struct ip);
+		runner = runner + (int)((header->ip_hl*32)/8);
 		return (u_char*)(packet + runner);
 		break;
 

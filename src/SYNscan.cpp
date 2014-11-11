@@ -193,7 +193,7 @@ void SYNscan::filterCallback(const u_char *packet){
 				protocol = icmp_ip_hdr->ip_p;
 				if(protocol != IPPROTO_TCP) return;
 				// check source and desination port
-				runner = runner + sizeof(struct ip);
+				runner = runner + (int)((icmp_ip_hdr->ip_hl*32)/8);
 				tcp_hdr = (struct tcphdr *)((u_char*)icmp_ip_hdr+runner);
 				s_port = ntohs(tcp_hdr->source);
 				d_port = ntohs(tcp_hdr->dest);
