@@ -55,19 +55,19 @@ void SYNscan::init(){
 
 	// create raw socket
 	sfd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
-    if(sfd < 0 ){
-        LOG(ERROR,"Failed to create RAW socket");
-        exit(0);
-    }else{
+	if(sfd < 0 ){
+		LOG(ERROR,"Failed to create RAW socket");
+		exit(0);
+	}else{
 		LOG(DEBUG,"Socket Initialized");
-    }
-    // set IPHDRINCL fasle                                                                                        
-    if(setsockopt(sfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(zero)) < 0){
-        LOG(ERROR, "Unable to set socket option IPHDEINCL to Flase");
-        exit(-1);
-    }else{
+	}
+	// set IPHDRINCL fasle                                                                                        
+	if(setsockopt(sfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(zero)) < 0){
+		LOG(ERROR, "Unable to set socket option IPHDEINCL to Flase");
+		exit(-1);
+	}else{
 		LOG(DEBUG, "IPHDRINCL set to False");
-    }
+	}
 }
 
 void SYNscan::send(){
@@ -120,20 +120,29 @@ void SYNscan::filterCallback(const u_char *packet){
 		runner = runner + ETHER_HDR_LEN;
 	}
 		
+	//LOG(DEBUG, "Scanned link layer");
 	switch(ether_type){
 
 	case ETHERTYPE_IP:
 		// IP protocol
-		/*{
+		{
+			//LOG(DEBUG, "FOUnd IP packet");
 			const struct ip *header = (struct ip *) (packet + runner);
 			//verify IP v4 
-			if(header->version != IPVERSION) {return;}
+			if(header->ip_v != IPVERSION) 
+				return;
 			// compare the source and destination ip
-			if((memcmp(&ntohl(header->ip_src), &src.sin_addr.s_addr, sizeof(header->ip_src)) != 0 ) || 
-			   (memcmp(&ntohl(header->ip_dst), &dst.sin_addr.s_addr, sizeof(header->ip_dst)) != 0)){
+			uint32_t source = (header->ip_dst.s_addr);
+			uint32_t dest = (header->ip_src.s_addr);
+			
+			if((memcmp(&source, &src.sin_addr.s_addr, sizeof(uint32_t)) != 0 ) || 
+			   (memcmp(&dest, &dst.sin_addr.s_addr, sizeof(uint32_t)) != 0)){
 				return;
 			}
-			}*/
+			// get the transport level protocol
+			uint8_t protocol = header->ip_p;
+		
+		}
 		break;
 
 	default:
