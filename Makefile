@@ -43,4 +43,4 @@ tar:
 	tar -cvf portScanner.tar Makefile README src
 
 run:
-	sudo ./portScanner --ports 80,20  --ip 129.79.78.189  --speedup 1 --scan SYN
+	sudo ./portScanner --ports 80,20  --ip 129.79.247.86  --speedup 1 --scan SYN
