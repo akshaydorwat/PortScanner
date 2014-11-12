@@ -8,6 +8,10 @@
 
 #include "UDPscan.hpp"
 
+void UDPscan::createPacket(){
+
+}
+
 void UDPscan::init(){
 
 }
@@ -17,13 +21,11 @@ void UDPscan::send(){
 }
 
 void UDPscan::handle(){
+	//toString();
+}
+
+void UDPscan::filterCallback(const u_char *ptr){
 
 }
 
-void UDPscan::filterCallback(){
 
-}
-
-void UDPscan::reportStats(){
-
-}

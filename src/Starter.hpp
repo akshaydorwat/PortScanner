@@ -12,11 +12,19 @@
 #include <getopt.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
 // user defined header
-#include "Logger.hpp"
+/*#include "Logger.hpp"
 #include "PortScannerUtils.hpp"
 #include "PacketScanner.hpp"
+#include "JobPool.hpp"
+#include "SYNscan.hpp"
+#include "ACKscan.hpp"
+#include "NULLscan.hpp"
+#include "XMASscan.hpp"
+#include "UDPscan.hpp"
+#include "FINscan.hpp"*/
 
 #define DEFAULT_NUM_OF_THREAD 1
 
@@ -40,7 +48,7 @@ enum SCAN_TECHNIQUE	// ordered by KNOWN_SCANS
 };
 
 // portscanner input data holder 
-struct inputData{
+struct InputData{
 	vector<string> scanTechniques;
 	vector<unsigned short> ports;
 	vector<sockaddr_in> ips;

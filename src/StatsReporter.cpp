@@ -17,6 +17,8 @@
 
 using namespace std;
 
+StatsReporter* StatsReporter::stsRptr = NULL;
+
 PortStatus StatsReporter::getPortStatus(struct in_addr ipAddr, uint16_t port)
 {
 	// Check whether supplied ipAddr was previously added to report

@@ -15,12 +15,15 @@ JobPool.o\
 PortScannerUtils.o\
 PacketScanner.o\
 PacketFactory.o\
+Scan.o\
 SYNscan.o\
 FINscan.o\
 ACKscan.o\
 NULLscan.o\
 XMASscan.o\
 UDPscan.o
+
+
 
 BIN = portScanner
 
@@ -42,4 +45,4 @@ tar:
 	tar -cvf portScanner.tar Makefile README src
 
 run:
-	sudo ./portScanner --ports 1-2,6-10,100,120,150-170 --ip 74.125.225.68 --prefix 127.0.0.1/30 --file ./ipAddresses.txt --speedup 5 --scan UDP SYN
+	sudo ./portScanner --ports 80,20  --ip 129.79.247.86  --speedup 4 --scan SYN FIN NULL ACK XMAS

@@ -6,11 +6,20 @@
 
 #include "Starter.hpp"
 
+// user defined header
+#include "Logger.hpp"
+#include "PortScannerUtils.hpp"
+#include "PacketScanner.hpp"
+#include "JobPool.hpp"
+#include "SYNscan.hpp"
+#include "ACKscan.hpp"
+#include "NULLscan.hpp"
+#include "XMASscan.hpp"
+#include "UDPscan.hpp"
+#include "FINscan.hpp"
+
 using namespace std;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//const string LOGFILE = "LOG.log";
-//const vector<string> KNOWN_SCANS = {"SYN", "NULL", "FIN", "XMAS", "ACK", "UDP"};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void show_help()
@@ -53,7 +62,7 @@ vector<unsigned short> extractPorts(string portStr)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool parse_args(int argc, char **argv, struct inputData *data)
+bool parse_args(int argc, char **argv, struct InputData *data)
 {
 	static struct option long_options[] = {
 		{"help",     no_argument,         NULL,  'h' },	// --help
@@ -155,6 +164,7 @@ bool parse_args(int argc, char **argv, struct inputData *data)
 		LOG(DEBUG, ips[i]);
 		struct sockaddr_in addr;
 		addr.sin_addr.s_addr = inet_addr(ips[i].c_str());
+		addr.sin_family = AF_INET;
 		data->ips.push_back(addr);
 	}
 	
@@ -186,23 +196,82 @@ bool parse_args(int argc, char **argv, struct inputData *data)
 	return numOpts > 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
+	
+	in.sin_family = AF_INET;
+
+	for(vector<sockaddr_in>::iterator i = data.ips.begin(); i != data.ips.end(); ++i){
+		struct sockaddr_in addr = *i;
+
+		for(vector<unsigned short>::iterator j = data.ports.begin(); j != data.ports.end(); ++j){
+			unsigned short port = *j;
+			addr.sin_port = port;
+
+			for(vector<string>::iterator k = data.scanTechniques.begin(); k != data.scanTechniques.end(); ++k){
+				string type = *k;
+				Scan *s;
+				
+				if(type.compare("SYN") == 0){
+					s = new SYNscan(in, addr, type);
+					
+				} else if(type.compare("NULL") == 0){
+					s = new NULLscan(in, addr, type);
+					
+				} else if(type.compare("FIN") == 0){
+					s = new FINscan(in, addr, type);
+					
+				} else if(type.compare("XMAS") == 0){
+					s = new XMASscan(in, addr, type);
+					
+				} else if(type.compare("ACK") == 0){
+					s = new ACKscan(in, addr, type);
+					
+				} else if(type.compare("UDP") == 0){
+					s = new UDPscan(in, addr, type);
+
+				} else {
+					LOG(ERROR, "Scan type " + type + " not found");
+					continue;
+				}
+								
+				pool.queueJob(s);
+			}
+		}
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main (int argc, char **argv)
 {
 	/* Initialize Logger */
 	ofstream log_file (LOGFILE, ios::out | ios::trunc);
 	Logger *l = Logger::getInstance();
-	inputData data;
+	InputData data;
 
+	/*Log handlers*/
 	l->addOutputStream(&cout, ERROR, string("%F %T"));
 	l->addOutputStream(&log_file, ERROR, string("%F %T"));
 
 	/* parse command line arguments */
 	int ret = parse_args(argc, argv, &data);
-	if(!ret) exit(EXIT_FAILURE);
+	if(!ret){
+		exit(EXIT_FAILURE);
+	}
 
+	/*Packet scanner*/
 	PacketScanner* packetScanner = PacketScanner::getPacketScanner();
 	pcap_t* pd = packetScanner->init();
-	if (!pd) exit(EXIT_FAILURE);
+	if (pd == NULL){ 
+		exit(EXIT_FAILURE);
+	}
+	pthread_t tid;
+	pthread_create(&tid, NULL, PacketScanner::scanForever, (void*)pd);
+	/*create Job pool */
+	JobPool pool(data.numOfThreads);
+	pool.init();
+	jobCreator(pool, data, packetScanner->deviceIp);
+	pool.delPool(false);
+	
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

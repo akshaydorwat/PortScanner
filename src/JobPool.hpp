@@ -30,7 +30,8 @@ public:
 	
 	bool init();
 	void queueJob(Scan *s);
-	bool delpool();
+	bool delPool(bool forceful);
+	void joinAll();
 	
 private:
 	enum POOL_STATE state;
@@ -39,6 +40,7 @@ private:
 	deque<Scan*> pool;
 	Mutex mutex;
 	ConditionVariable condVar;
+	bool done;
 
 	void run();
 	static void* helper(void *arg);
