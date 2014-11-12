@@ -39,44 +39,47 @@ pcap_t* PacketScanner::init()
 	uint32_t  devip, devnetmask;
 	int status;
 	struct bpf_program  bpf;
-	char *device;
+	string device;
 	pcap_if_t *alldevs;
 
 	// Obtain the default device name
-	if ((device = pcap_lookupdev(errbuf)) == NULL)
-	{
-		LOG (ERROR, "PacketScanner : Failed to obtain default network device. " + string(errbuf));
-		return NULL;
-	}
-	
+	/*if ((device = pcap_lookupdev(errbuf)) == NULL)
+	  {
+	  LOG (ERROR, "PacketScanner : Failed to obtain default network device. " + string(errbuf));
+	  return NULL;
+	  }*/
+
 	// Obtain list of all available network devices
 	if ((status = pcap_findalldevs(&alldevs, errbuf)) != 0) 
 	{
 		LOG (ERROR, "PacketScanner : Failed to obtain all network devices. " + string(errbuf));
 		return NULL;
 	}
-	for(pcap_if_t *d=alldevs; d!=NULL; d=d->next) 
+	bool found = false;
+	for(pcap_if_t *d=alldevs; !found && d != NULL; d=d->next) 
 	{
-		if (string(d->name) == string(device))
+		for(pcap_addr_t *a=d->addresses; !found && a != NULL; a = a->next)
 		{
-			for(pcap_addr_t *a=d->addresses; a != NULL; a = a->next)
+			if(a->addr->sa_family == AF_INET)
 			{
-				if(a->addr->sa_family == AF_INET)
-					deviceIp.sin_addr = ((struct sockaddr_in*)a->addr)->sin_addr;
+				// store the device with a valid IP address (and assume that's the active connection)
+				device = string(d->name);
+				deviceIp.sin_addr = ((struct sockaddr_in*)a->addr)->sin_addr;
+				found = true;
 			}
 		}
 	}
 	pcap_freealldevs(alldevs);
 
 	// Open the device for live capture.
-	if ((pd = pcap_open_live(device, BUFSIZ, 1, 0, errbuf)) == NULL)
+	if ((pd = pcap_open_live(device.c_str(), BUFSIZ, 1, 0, errbuf)) == NULL)
 	{
 		LOG(ERROR, "PacketScanner : Failed to open device: " + string(errbuf));
 		return NULL;
 	}
 
 	// Get network device source IP address and netmask.
-	if (pcap_lookupnet(device, &devip, &devnetmask, errbuf) < 0)
+	if (pcap_lookupnet(device.c_str(), &devip, &devnetmask, errbuf) < 0)
 	{
 		LOG(ERROR, "PacketScanner : Failed to obtain n/w device info. " + string(errbuf));
 		return NULL;
@@ -96,7 +99,7 @@ pcap_t* PacketScanner::init()
 		return NULL;
 	}
 
-	LOG (DEBUG, "PacketScanner : Initialized on " + string(device) + " IP address " + string(inet_ntoa(deviceIp.sin_addr)));
+	LOG (DEBUG, "PacketScanner : Initialized on " + device + ". IP address " + string(inet_ntoa(deviceIp.sin_addr)));
 	return pd;
 }
 

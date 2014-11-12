@@ -3,25 +3,38 @@
  * Date      : 11-08-2014
  * Email     : adorwat@indiana.edu
  * Tab Width : 4 
+ *
+ * Co-author : Rohit Khapare
+ * Date	     : 11-10-2014
+ * Email     : rkhapare@indiana.edu
  **/
 
-#ifndef STATS_REPORTER_HPP
-#define STATS_REPORTER_HPP
+#ifndef STATSREPORTER_HPP
+#define STATSREPORTER_HPP
 
-// c++ lib
 #include <string>
 #include <map>
-// c lib
-#include <netinet/in.h>
 
-// user lib
-#include "Stat.hpp"
+#include <inttypes.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include "PortStatus.hpp"
+#include "Starter.hpp"
 
 using namespace std;
 
-class StatsRporter{
-public:
-	map<string, Stat> report;
+class StatsReporter
+{
+	public:
+		void displayReport();
+		void updatePortStatus(struct in_addr ipAddr, uint16_t port, enum SCAN_TECHNIQUE scanType, enum PORT_STATUS portSts);
+		void updateServiceStatus(struct in_addr ipAddr, uint16_t port, string svc, string version);
+
+	private:
+		map<string, map<string, vector<PortStatus>>> report;
+
+		PortStatus getPortStatus(struct in_addr ipAddr, uint16_t port);
 };
 
 #endif

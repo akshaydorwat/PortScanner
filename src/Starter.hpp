@@ -29,6 +29,15 @@ const string LOGFILE = "LOG.log";
 
 // Known scan techniques
 const vector<string> KNOWN_SCANS = {"SYN", "NULL", "FIN", "XMAS", "ACK", "UDP"};
+enum SCAN_TECHNIQUE	// ordered by KNOWN_SCANS
+{
+	_SYN,
+	_NULL,
+	_FIN,
+	_XMAS,
+	_ACK,
+	_UDP
+};
 
 // portscanner input data holder 
 struct inputData{

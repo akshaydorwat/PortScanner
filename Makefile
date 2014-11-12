@@ -8,6 +8,8 @@ OBJ = \
 Starter.o\
 Logger.o\
 Mutex.o\
+PortStatus.o\
+StatsReporter.o\
 ConditionVariable.o\
 JobPool.o\
 PortScannerUtils.o\
@@ -19,7 +21,6 @@ ACKscan.o\
 NULLscan.o\
 XMASscan.o\
 UDPscan.o
-
 
 BIN = portScanner
 
