@@ -64,14 +64,14 @@ void XMASscan::init(){
 		LOG(ERROR,"Failed to create RAW socket");
 		exit(0);
 	}else{
-		LOG(DEBUG,"Socket Initialized");
+		//LOG(DEBUG,"Socket Initialized");
 	}
 	// set IPHDRINCL fasle                                                                                        
 	if(setsockopt(sfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(zero)) < 0){
 		LOG(ERROR, "Unable to set socket option IPHDEINCL to Flase");
 		exit(-1);
 	}else{
-		LOG(DEBUG, "IPHDRINCL set to False");
+		//LOG(DEBUG, "IPHDRINCL set to False");
 	}
 }
 
@@ -79,7 +79,7 @@ void XMASscan::send(){
 	if(sendto(sfd, buff, sizeof(struct tcphdr), 0, (struct sockaddr *)&dst, sizeof(dst)) < 0){
 		LOG(ERROR, "Sending failed");
 	}else{
-		LOG(DEBUG, "PACKET sent successfully");
+		LOG(DEBUG, debugInfo + " PACKET sent successfully");
 		numOfPacketSent++;
 	}
 }
@@ -107,6 +107,11 @@ void XMASscan::handle(){
 	// unregister callback wih filter
 	scanner->unregisterCallback(sfd);
 
+	
+	if(numOfPacketReceived == 0){
+		status = OPEN_FILTERED;
+	}
+	
 	// report states
 	reportStats();
 }
@@ -160,7 +165,7 @@ void XMASscan::filterCallback(const u_char *packet){
 		else*/
 		if((tcp_hdr->rst)){
 			status = CLOSED;
-			LOG(DEBUG, "RST flag set, Port is closed");
+			LOG(DEBUG,  debugInfo + " RST flag set, Port is closed");
 		}
 		break;
 		
@@ -208,7 +213,7 @@ void XMASscan::filterCallback(const u_char *packet){
 				// set status 
 				numOfPacketReceived++;
 				status = FILTERED;
-				LOG(DEBUG, "UNREACHABLE HOST, Port is FILTERED");
+				LOG(DEBUG,  debugInfo + " UNREACHABLE HOST, Port is FILTERED");
 				break;
 
 			default:
@@ -226,8 +231,3 @@ void XMASscan::filterCallback(const u_char *packet){
 	}//protocol
 }
 
-void XMASscan::reportStats(){
-	if(numOfPacketReceived == 0){
-		status = OPEN_FILTERED;
-	}
-}

@@ -158,7 +158,7 @@ bool PacketScanner::registerCallback(int socket_fd, function<void(const u_char*)
 	if (callbackMap.count(socket_fd) == 0)
 	{
 		callbackMap[socket_fd] = fxn;
-		LOG (DEBUG, "PacketScanner : Registered callback for socket#" + to_string(socket_fd));
+		//LOG (DEBUG, "PacketScanner : Registered callback for socket#" + to_string(socket_fd));
 		return true;
 	}
 	else

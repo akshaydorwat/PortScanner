@@ -28,6 +28,4 @@ void UDPscan::filterCallback(const u_char *ptr){
 
 }
 
-void UDPscan::reportStats(){
 
-}

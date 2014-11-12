@@ -38,7 +38,8 @@ public:
 		// initialise the stats
 		numOfPacketSent = 0;
 		numOfPacketReceived = 0;
-		
+		//debugging
+		debugInfo = string(inet_ntoa(dst.sin_addr)) + ":" +	to_string((int)dst.sin_port) + "\t"	+ scanType;
 	};
 	
 	virtual ~Scan(){
@@ -66,10 +67,14 @@ protected:
 	int numOfPacketSent;
 	int numOfPacketReceived;
 	int sfd;
+	string debugInfo;
 
 	// basic filter
 	const u_char* basicFilter(const u_char *packet, uint8_t &protocol);
 	
+	// report status to Reporter
+	void reportStats();
+
 private:
 
 	// Initial setup 
@@ -78,12 +83,8 @@ private:
 	// Send packet 
 	virtual void send() = 0;
 
-	// report status to Reporter
-	virtual void reportStats() = 0;
-
 	// create packet 
 	virtual void createPacket() = 0;
-	
 	
 };
 

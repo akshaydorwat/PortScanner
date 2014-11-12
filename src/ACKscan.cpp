@@ -5,7 +5,6 @@
  * Tab Width : 4 
  **/
 
-
 #include "ACKscan.hpp"
 
 void ACKscan::createPacket(){
@@ -59,14 +58,14 @@ void ACKscan::init(){
 		LOG(ERROR,"Failed to create RAW socket");
 		exit(0);
 	}else{
-		LOG(DEBUG,"Socket Initialized");
+		//LOG(DEBUG, debugInfo + "Socket Initialized");
 	}
 	// set IPHDRINCL fasle                                                                                        
 	if(setsockopt(sfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(zero)) < 0){
 		LOG(ERROR, "Unable to set socket option IPHDEINCL to Flase");
 		exit(-1);
 	}else{
-		LOG(DEBUG, "IPHDRINCL set to False");
+		//LOG(DEBUG, "IPHDRINCL set to False");
 	}
 }
 
@@ -74,7 +73,7 @@ void ACKscan::send(){
 	if(sendto(sfd, buff, sizeof(struct tcphdr), 0, (struct sockaddr *)&dst, sizeof(dst)) < 0){
 		LOG(ERROR, "Sending failed");
 	}else{
-		LOG(DEBUG, "PACKET sent successfully");
+		LOG(DEBUG, debugInfo + " PACKET sent successfully");
 		numOfPacketSent++;
 	}
 }
@@ -101,6 +100,10 @@ void ACKscan::handle(){
 
 	// unregister callback wih filter
 	scanner->unregisterCallback(sfd);
+
+	if(numOfPacketReceived == 0){
+		status = FILTERED;
+	}
 
 	// report states
 	reportStats();
@@ -137,7 +140,6 @@ void ACKscan::filterCallback(const u_char *packet){
 		// compare the ports
 		if((memcmp(&s_port, &dst.sin_port, sizeof(uint16_t)) != 0) || 
 		   (memcmp(&d_port, &src.sin_port, sizeof(uint16_t)) != 0)){
-			LOG(DEBUG, "Ports didnt match");
 			return;
 		}
 
@@ -146,7 +148,7 @@ void ACKscan::filterCallback(const u_char *packet){
 		
 		if((tcp_hdr->rst)){
 			status = UNFILTERED;
-			LOG(DEBUG, "RST flag set, Port is closed");
+			LOG(DEBUG, debugInfo + " RST flag set, Port is closed");
 		}
 		break;
 		
@@ -194,7 +196,7 @@ void ACKscan::filterCallback(const u_char *packet){
 				// set status 
 				numOfPacketReceived++;
 				status = FILTERED;
-				LOG(DEBUG, "UNREACHABLE HOST, Port is FILTERED");
+				LOG(DEBUG, debugInfo + " UNREACHABLE HOST, Port is FILTERED");
 				break;
 
 			default:
@@ -210,11 +212,4 @@ void ACKscan::filterCallback(const u_char *packet){
     default :
 		return;
 	}//protocol
-}
-
-void ACKscan::reportStats(){
-	if(numOfPacketReceived == 0){
-		status = FILTERED;
-	}
-
 }

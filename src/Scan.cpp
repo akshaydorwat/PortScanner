@@ -42,6 +42,12 @@ const u_char* Scan::basicFilter(const u_char *packet, uint8_t &protocol){
 	default:
 		return NULL;
 	}
-
 }
  
+void Scan::reportStats(){
+	
+	string s = Stat::portStatusToString(status);
+	LOG(DEBUG, debugInfo + " " + s);
+}
+
+
