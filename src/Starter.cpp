@@ -258,6 +258,8 @@ int main (int argc, char **argv)
 	if(!ret){
 		exit(EXIT_FAILURE);
 	}
+	/* create stat reporter*/
+	StatsReporter *stsRptr = StatsReporter::getStatsReporter();
 
 	/*Packet scanner*/
 	PacketScanner* packetScanner = PacketScanner::getPacketScanner();
@@ -267,11 +269,17 @@ int main (int argc, char **argv)
 	}
 	pthread_t tid;
 	pthread_create(&tid, NULL, PacketScanner::scanForever, (void*)pd);
+
 	/*create Job pool */
 	JobPool pool(data.numOfThreads);
 	pool.init();
 	jobCreator(pool, data, packetScanner->deviceIp);
 	pool.delPool(false);
+
+	/*Display status*/
+	stsRptr->displayReport();
+
+	// display status function call
 	
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

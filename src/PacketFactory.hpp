@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <netinet/udp.h>
 #include <arpa/inet.h>
 
 // local lib
@@ -67,17 +68,28 @@ private:
 	// TCP checksum calculator
 	uint16_t tcpChecksome(struct TCP_pseudo_t *ptr);
 
+	// UDP checksum calculator
+	uint16_t udpChecksome(struct UDP_pseudo_t *ptr);
+
 	// Genralized checksum calculator
 	uint16_t checksumCalculator (const void * addr, unsigned len, uint16_t init);
 
 };
 
 struct TCP_pseudo_t{
-  u_int32_t saddr;
-  u_int32_t daddr;
-  u_int8_t reserve;
-  u_int8_t protocol;
-  u_int16_t len;
+	u_int32_t saddr;
+	u_int32_t daddr;
+	u_int8_t reserve;
+	u_int8_t protocol;
+	u_int16_t len;
+};
+
+struct UDP_pseudo_t{
+	u_int32_t saddr;
+	u_int32_t daddr;
+	u_int8_t reserve;
+	u_int8_t protocol;
+	u_int16_t len;
 };
 
 #endif // MACRO

@@ -25,6 +25,7 @@ bool PacketFactory::setOption(string option, void *ptr){
 		break;
 
     case UDP:
+		ret = setOptionUDP(option, ptr);
 		break;
 		
     default:
@@ -32,6 +33,47 @@ bool PacketFactory::setOption(string option, void *ptr){
 		ret = false;
     }
 	return ret;
+}
+
+bool PacketFactory::setOptionUDP(string &option, void *val){
+	struct udphdr *udp = (struct udphdr*)packet;
+
+	// source port
+	if(option.compare("src_port") == 0){
+		uint16_t *port = (uint16_t*)val;
+		udp->source = htons(*port);
+	} else
+
+	// destination port
+	if(option.compare("dst_port") == 0){
+		uint16_t *port = (uint16_t*)val;
+		udp->dest = htons(*port);
+	} else
+
+	// length
+	if(option.compare("len") == 0){				
+		uint16_t *len = (uint16_t*)val;
+		udp->len = htons(*len);
+	}else
+
+	// checksum
+	if(option.compare("check") == 0){
+		struct UDP_pseudo_t *ptr = (struct UDP_pseudo_t *)val;
+		udp->check = udpChecksome(ptr);
+	}else{
+		LOG(ERROR, "Invalid Option TCP option :" + option);
+		return false;
+	}
+
+	return true;
+}
+
+uint16_t PacketFactory::udpChecksome(struct UDP_pseudo_t *ptr){
+	uint16_t sum;
+	
+	sum = checksumCalculator(ptr, sizeof(struct UDP_pseudo_t), 0);
+	sum = checksumCalculator(packet, sizeof(struct udphdr), (uint16_t)~sum);
+	return sum;
 }
 
 bool PacketFactory::setOptionTCP(string &option, void *val){

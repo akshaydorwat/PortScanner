@@ -49,7 +49,6 @@ void Scan::reportStats(){
 	stsRptr->updatePortStatus(dst.sin_addr, dst.sin_port, scanType, status);
 	string s = PortStatus::getStatusString(status);
 	LOG(DEBUG, debugInfo + " " + s);
-	stsRptr->displayReport();
 }
 
 
