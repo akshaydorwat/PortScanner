@@ -36,7 +36,6 @@ class PortStatus
 		string getScanStatus(enum SCAN_TECHNIQUE scanType);
 		string getConclusion();
 
-	//private:
 		static string getStatusString(enum PORT_STATUS sts);
 };
 
