@@ -35,7 +35,7 @@ class StatsReporter
 		StatsReporter(StatsReporter const&){};                			// private copy constructor
 		StatsReporter& operator=(StatsReporter const&){ return *stsRptr; };	// private assignment operator
 
-		PortStatus getPortStatus(struct in_addr ipAddr, uint16_t port);
+		size_t getPortStatus(struct in_addr ipAddr, uint16_t port, string &oldSts);
 
 	public:
 		static StatsReporter* getStatsReporter()       // obtain the singleton instance
