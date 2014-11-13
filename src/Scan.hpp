@@ -8,11 +8,14 @@
 #ifndef SCAN_HPP
 #define SCAN_HPP
 
+// user lib
 #include "PacketFactory.hpp"
 #include "StatsReporter.hpp"
 #include "Logger.hpp"
 #include "PacketScanner.hpp"
+#include "UniquePortGenerator.hpp"
 
+// c lib
 #include <sys/socket.h>
 #include <string.h>
 #include <unistd.h>
@@ -41,7 +44,7 @@ public:
 		}
 
 		// set unused port for source 
-		src.sin_port = PacketFactory::getUnusedPort();
+		src.sin_port = UniquePortGenerator::getInstance()->getUnusedPort();
 		// zero the memory
 		memset(buff,'\0' ,BUFFER_SIZE);
 		// initialise the stats
@@ -53,7 +56,7 @@ public:
 	
 	virtual ~Scan(){
 		delete factory;
-		PacketFactory::freeUsedPort(src.sin_port);
+		UniquePortGenerator::getInstance()->freeUsedPort(src.sin_port);
 		close(sfd);
 	};
 

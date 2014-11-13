@@ -12,6 +12,8 @@
 #include <inttypes.h>
 #include <netinet/in.h>
 
+#include "Mutex.hpp"
+
 using namespace std;
 
 #ifndef PACKET_SCANNER_HPP
@@ -27,6 +29,7 @@ class PacketScanner
 private:
 	static PacketScanner* packetScanner;
 	map<int, function<void(const u_char*)>> callbackMap;
+	Mutex mLock;
 
 	PacketScanner(){};								// private constructor
 	PacketScanner(PacketScanner const&){};						// private copy constructor

@@ -158,14 +158,17 @@ void PacketScanner::makeCallbacks(u_char *usr, const struct pcap_pkthdr *pkthdr,
 bool PacketScanner::registerCallback(int socket_fd, function<void(const u_char*)> fxn)
 {
 	// if not already registered, register a new callback against the requisite socket
+	mLock.lock();
 	if (callbackMap.count(socket_fd) == 0)
 	{
 		callbackMap[socket_fd] = fxn;
 		//LOG (DEBUG, "PacketScanner : Registered callback for socket#" + to_string(socket_fd));
+		mLock.unlock();
 		return true;
 	}
 	else
 	{
+		mLock.unlock();
 		LOG(WARNING, "PacketScanner : Erroneous overwrite of callback for socket#" + to_string(socket_fd) + " declined !!!");
 		return false;
 	}
@@ -175,7 +178,11 @@ bool PacketScanner::registerCallback(int socket_fd, function<void(const u_char*)
 bool PacketScanner::unregisterCallback(int socket_fd)
 {
 	// unregister the callback associated with the requisite socket
-	return callbackMap.erase(socket_fd) == 1;
+	int ret;
+	mLock.lock();
+	ret = callbackMap.erase(socket_fd);
+	mLock.unlock();
+	return  ret == 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

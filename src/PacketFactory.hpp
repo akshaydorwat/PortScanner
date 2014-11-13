@@ -7,20 +7,20 @@
 
 // c lib
 #include <stdlib.h>
-#include <time.h>
+
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/udp.h>
 #include <arpa/inet.h>
+#include <string.h>
 
 // local lib
 #include "Logger.hpp"
 #include "Mutex.hpp"
+#include "dns.h"
 
-#define MAX_PORT 65535
-#define MIN_PORT 4096
 #define DEFAULT_SEQ_NO 2500
 #define DEFAULT_ACK_SEQ 0
 #define DEFAULT_WINDOW 29200
@@ -31,7 +31,7 @@ using namespace std;
 enum PROTOCOL{
 	TCP,
 	UDP,
-	ICMP
+	DNS
 };
 
 class PacketFactory{
@@ -53,14 +53,12 @@ public:
 private:
 	enum PROTOCOL protocol;
 	char *packet;
-	static bitset<MAX_PORT> portRange;
-	static Mutex mLock;
 	
 	// set TCP packet options
 	bool setOptionTCP(string &option, void *val);
 	
-	// set ICMP packet options
-	bool setOptionICMP(string &option, void *val);
+	// set DNS packet options
+	bool setOptionDNS(string &option, void *val);
 	
 	// set UDP packet options
 	bool setOptionUDP(string &option, void *val);
@@ -69,11 +67,16 @@ private:
 	uint16_t tcpChecksome(struct TCP_pseudo_t *ptr);
 
 	// UDP checksum calculator
-	uint16_t udpChecksome(struct UDP_pseudo_t *ptr);
+	uint16_t udpChecksome(struct UDP_pseudo_t *ptr, int hdr_len);
 
 	// Genralized checksum calculator
 	uint16_t checksumCalculator (const void * addr, unsigned len, uint16_t init);
 
+	// set dsn question section
+	int setQuestion(char *str,  uint16_t qtype, uint16_t qclass);
+	
+	// dns char to dns string to converter
+	int charToDnsString(char *str, char *dns);
 };
 
 struct TCP_pseudo_t{
@@ -91,5 +94,8 @@ struct UDP_pseudo_t{
 	u_int8_t protocol;
 	u_int16_t len;
 };
+
+
+
 
 #endif // MACRO

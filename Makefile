@@ -21,7 +21,8 @@ FINscan.o\
 ACKscan.o\
 NULLscan.o\
 XMASscan.o\
-UDPscan.o
+UDPscan.o\
+UniquePortGenerator.o
 
 
 
@@ -45,4 +46,4 @@ tar:
 	tar -cvf portScanner.tar Makefile README src
 
 run:
-	sudo ./portScanner --ports 80,20  --ip 129.79.247.86  --speedup 4 --scan SYN FIN NULL ACK XMAS
+	sudo ./portScanner --ports 80,22,24,43,110,143   --ip 129.79.247.87  --speedup 4 --scan SYN ACK NULL FIN XMAS

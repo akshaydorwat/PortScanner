@@ -7,10 +7,6 @@
 
 #include "PacketFactory.hpp"
 
-// Global declaration of static variable
-bitset<MAX_PORT> PacketFactory::portRange;
-Mutex PacketFactory::mLock;
-
 bool PacketFactory::setOption(string option, void *ptr){
   
 	bool ret;
@@ -21,7 +17,8 @@ bool PacketFactory::setOption(string option, void *ptr){
 		ret =  setOptionTCP(option, ptr);
 		break;
 
-    case ICMP:
+    case DNS:
+		ret = setOptionDNS(option, ptr);
 		break;
 
     case UDP:
@@ -33,6 +30,166 @@ bool PacketFactory::setOption(string option, void *ptr){
 		ret = false;
     }
 	return ret;
+}
+
+bool PacketFactory::setOptionDNS(string &option, void *val){
+
+	struct dnshdr *dns = (struct dnshdr *)(packet + sizeof(udphdr));
+	
+	// source port
+	if(option.compare("src_port") == 0){
+		setOptionUDP(option, val);
+	} else
+
+	// destination port
+	if(option.compare("dst_port") == 0){
+		setOptionUDP(option, val);
+	} else
+
+	// length
+	if(option.compare("len") == 0){				
+		setOptionUDP(option, val);
+	}else
+
+	// checksum
+	if(option.compare("check") == 0){
+		setOptionUDP(option, val);
+	}else
+	
+	// unique dns request id
+	if(option.compare("id") == 0){
+		uint16_t *id = (uint16_t *)val;
+		dns->q_count = htons(*id);
+	}else
+
+	// recursion desired
+	if(option.compare("rd") == 0){
+		dns->rd = 1;
+	}else
+
+	// truncate causion
+	if(option.compare("tc") == 0){
+		dns->tc = 1;
+	}else
+
+	// authorative answer
+	if(option.compare("aa") == 0){
+		dns->aa = 1;
+	}else
+
+	// opcode
+	if(option.compare("opcode") == 0){
+		uint16_t *opcode = (uint16_t*)val;
+		dns->opcode = *opcode;
+	}else
+
+	// query/response
+	if(option.compare("qr") == 0){
+		dns->qr = 1;
+	}else
+
+	//resonse code
+	if(option.compare("rcode") == 0){
+		uint16_t *rcode = (uint16_t*)val;
+		dns->rcode = *rcode;
+	}else
+
+	// checking disable
+	if(option.compare("cd") == 0){
+		dns->cd = 1;
+	}else
+
+	// authenticated data
+	if(option.compare("ad") == 0){
+		dns->ad = 1;
+	}else
+
+	// recusion available
+	if(option.compare("ra") == 0){
+		dns->ra = 1;
+	}else
+
+	// question count
+	if(option.compare("q_count") == 0){
+		uint16_t *count = (uint16_t *)val;
+		dns->q_count = htons(*count);
+	}else
+
+	// answer count
+	if(option.compare("ans_count") == 0){
+		uint16_t *count = (uint16_t *)val;
+		dns->ans_count = htons(*count);
+	}else
+
+	// authority count
+	if(option.compare("auth_count") == 0){
+		uint16_t *count = (uint16_t *)val;
+		dns->auth_count = htons(*count);
+	}else
+	
+	// resource entry count
+	if(option.compare("add_count") == 0){
+		uint16_t *count = (uint16_t *)val;
+		dns->add_count = htons(*count);
+	}else{
+		LOG(ERROR, "Invalid UDP option " + option);
+		return false;
+	}
+
+	return true;
+}
+
+
+int PacketFactory::setQuestion(char *str,  uint16_t qtype, uint16_t qclass){
+	
+	struct question * qinfo;
+	char *qname;
+	int qname_len;
+
+	// error check
+	if(protocol != DNS){
+		LOG(ERROR, "Protocol set is not DNS");
+		return 0;
+	}
+
+	// calculate question name pointer pointer 
+	qname = (char *)(packet + sizeof(udphdr) + sizeof(dnshdr));
+	
+	// convert string to dns string
+	qname_len = charToDnsString(str, qname);
+	
+	// quesion section 
+	qinfo = (struct question *)(packet + sizeof(udphdr) + sizeof(dnshdr) + qname_len);
+	qinfo->qtype = qtype;
+	qinfo->qclass = qclass;
+
+	return qname_len;
+}
+
+
+int PacketFactory::charToDnsString(char *str, char *dns){
+
+    char buff[1024];
+    char *ptr;
+    int len;
+
+    memcpy( buff, str, strlen(str));
+    ptr = strtok(buff, ".");
+    while(ptr != NULL){
+        // determine the length                                                                                  
+        printf("string : %s \n",ptr);
+        len = strlen(ptr);
+        //copy length                                                                                             
+        *dns++ = len;
+        // copy string into dns buffer                                           
+        memcpy(dns, ptr, len);
+        //increment dns pointer by string len                                                                     
+        dns = dns + len;
+        // iterative call to strtok                                                                               
+        ptr = strtok (NULL, ".");
+    }
+    *dns++ = '\0';
+	return strlen(dns)+1;
 }
 
 bool PacketFactory::setOptionUDP(string &option, void *val){
@@ -59,20 +216,20 @@ bool PacketFactory::setOptionUDP(string &option, void *val){
 	// checksum
 	if(option.compare("check") == 0){
 		struct UDP_pseudo_t *ptr = (struct UDP_pseudo_t *)val;
-		udp->check = udpChecksome(ptr);
+		udp->check = udpChecksome(ptr, (int)ntohs(udp->len));
 	}else{
-		LOG(ERROR, "Invalid Option TCP option :" + option);
+		LOG(ERROR, "Invalid Option UDP option :" + option);
 		return false;
 	}
 
 	return true;
 }
 
-uint16_t PacketFactory::udpChecksome(struct UDP_pseudo_t *ptr){
+uint16_t PacketFactory::udpChecksome(struct UDP_pseudo_t *ptr, int hdr_len){
 	uint16_t sum;
 	
 	sum = checksumCalculator(ptr, sizeof(struct UDP_pseudo_t), 0);
-	sum = checksumCalculator(packet, sizeof(struct udphdr), (uint16_t)~sum);
+	sum = checksumCalculator(packet, hdr_len, (uint16_t)~sum);
 	return sum;
 }
 
@@ -181,7 +338,7 @@ uint16_t PacketFactory::checksumCalculator (const void * addr, uint32_t len, uin
   ptr = (uint16_t *) addr;
   
   // calcualte the some over the packet
-  // len is in bytes and we are using uin16_t so reducing length by 2 
+  // len is in bytes and we are using uint16_t so reducing length by 2 
   for(int i=len; i >= 2; i -= 2) {
     checksum += *(ptr++);
   }
@@ -194,31 +351,4 @@ uint16_t PacketFactory::checksumCalculator (const void * addr, uint32_t len, uin
   return ((uint16_t)~checksum);
 }
 
-
-// get unused port 
-uint16_t  PacketFactory::getUnusedPort(){
-	
-	int random;
-
-	mLock.lock();
-	srand (time(NULL));
-	random = rand() % ( MIN_PORT + (MAX_PORT - MIN_PORT));
-	
-	if(portRange[random]){
-		random++;
-		if (random > MAX_PORT){
-			random = MIN_PORT;
-		}
-	}
-	portRange[random] = 1;
-	mLock.unlock();
-	return (uint16_t)random;
-}
-
-//free used port
-void PacketFactory::freeUsedPort(uint16_t port){
-	mLock.lock();
-	portRange[(int)port] = 0;
-	mLock.unlock();
-}
 
