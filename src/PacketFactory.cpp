@@ -6,7 +6,7 @@
  **/
 
 #include "PacketFactory.hpp"
-
+#include <stdio.h>
 bool PacketFactory::setOption(string option, void *ptr){
   
 	bool ret;
@@ -156,28 +156,28 @@ int PacketFactory::setQuestion(char *str,  uint16_t qtype, uint16_t qclass){
 	qname = (char *)(packet + sizeof(udphdr) + sizeof(dnshdr));
 	
 	// convert string to dns string
-	qname_len = charToDnsString(str, qname);
+	qname_len = charToDnsString( (unsigned char *)qname , (unsigned char *)str);
 	
 	// quesion section 
 	qinfo = (struct question *)(packet + sizeof(udphdr) + sizeof(dnshdr) + qname_len);
-	qinfo->qtype = qtype;
-	qinfo->qclass = qclass;
+	qinfo->qtype = htons(qtype);
+	qinfo->qclass = htons(qclass);
 
-	return qname_len;
+	return qname_len + sizeof(struct question);
 }
 
 
-int PacketFactory::charToDnsString(char *str, char *dns){
+int PacketFactory::charToDnsString( unsigned char *dns, unsigned char *str){
 
-    char buff[1024];
+    unsigned char buff[1024];
+	char *temp = (char *)dns;
     char *ptr;
     int len;
 
-    memcpy( buff, str, strlen(str));
-    ptr = strtok(buff, ".");
+    memcpy( buff, str, strlen((char*)str));
+    ptr = strtok((char*)buff, ".");
     while(ptr != NULL){
         // determine the length                                                                                  
-        printf("string : %s \n",ptr);
         len = strlen(ptr);
         //copy length                                                                                             
         *dns++ = len;
@@ -189,8 +189,9 @@ int PacketFactory::charToDnsString(char *str, char *dns){
         ptr = strtok (NULL, ".");
     }
     *dns++ = '\0';
-	return strlen(dns)+1;
+	return strlen(temp)+1;
 }
+
 
 bool PacketFactory::setOptionUDP(string &option, void *val){
 	struct udphdr *udp = (struct udphdr*)packet;

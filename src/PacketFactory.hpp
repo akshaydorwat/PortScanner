@@ -44,11 +44,10 @@ public:
 	// set option in packet
 	bool setOption(string option, void *val);
 
-	// get unused port 
-	static uint16_t getUnusedPort();
-
-	// free used ports
-	static void freeUsedPort(uint16_t port);
+	
+	// set dsn question section
+	int setQuestion(char *str,  uint16_t qtype, uint16_t qclass);
+	
 
 private:
 	enum PROTOCOL protocol;
@@ -72,11 +71,8 @@ private:
 	// Genralized checksum calculator
 	uint16_t checksumCalculator (const void * addr, unsigned len, uint16_t init);
 
-	// set dsn question section
-	int setQuestion(char *str,  uint16_t qtype, uint16_t qclass);
-	
 	// dns char to dns string to converter
-	int charToDnsString(char *str, char *dns);
+	int charToDnsString(unsigned char *str, unsigned char *dns);
 };
 
 struct TCP_pseudo_t{

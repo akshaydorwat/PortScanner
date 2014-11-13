@@ -80,6 +80,7 @@ protected:
 	int numOfPacketReceived;
 	int sfd;
 	string debugInfo;
+	int packetLen;
 
 	// basic filter
 	const u_char* basicFilter(const u_char *packet, uint8_t &protocol);

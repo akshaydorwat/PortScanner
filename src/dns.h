@@ -8,7 +8,7 @@
  */
 
 #define TYPE_A 0x0001
-
+#define OPCODE_QUERY 0x0000
 #define CLASS_INTERNET 0x0001
 
 //DNS header structure
