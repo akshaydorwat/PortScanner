@@ -179,13 +179,13 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 	}
 	data->ports = ports;
 	
-	LOG(DEBUG, "========== Port-Scan Techniques ==========");
+	LOG(DEBUG, "====== Port-Scan Techniques ======");
 	for (size_t i=0; i < scanTechniques.size(); i++){
 		LOG(DEBUG, scanTechniques[i]);
 	}
 	data->scanTechniques = scanTechniques;
 
-	LOG(DEBUG, "========== Desired speedup ==========");
+	LOG(DEBUG, "========= Desired speedup ========");
 	if (numOfThreads > 1){	
 		LOG(DEBUG, to_string( numOfThreads));
 		data->numOfThreads = numOfThreads;

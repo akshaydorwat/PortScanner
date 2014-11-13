@@ -147,11 +147,13 @@ void PacketScanner::makeCallbacks(u_char *usr, const struct pcap_pkthdr *pkthdr,
 {
 	PacketScanner *pktScnr = (PacketScanner *) usr;
 	// invoke all the registered callbacks
+	pktScnr->mLock.lock();
 	for(map<int, function<void(const u_char*)>>::iterator itr = pktScnr->callbackMap.begin(); \
 			itr != pktScnr->callbackMap.end(); ++itr)
 	{
 		itr->second(pktptr);
 	}
+	pktScnr->mLock.unlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
