@@ -98,7 +98,6 @@ void UDPscan::handle(){
 	
 	// Poll on the recieved packet, if failed try resending it
 	for(int i=0 ; i < MAX_TRY; i++){
-	 
 		sleep(1);
 		if(numOfPacketReceived){
 			break;
@@ -111,7 +110,7 @@ void UDPscan::handle(){
 
 	// update status if no packet recieved
 	if(numOfPacketReceived == 0){
-		status = FILTERED;
+		status = OPEN_FILTERED;
 	}
 
 	// report states

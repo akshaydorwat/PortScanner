@@ -19,11 +19,51 @@ using namespace std;
 
 StatsReporter* StatsReporter::stsRptr = NULL;
 
-//PortStatus 
+void StatsReporter::enterMonitor(string ipPort)
+{
+	//cout << "Checking monitor for " << ipPort << endl;
+	bool goAhead;
+	do	// check monitor for existing lock on ipPort
+	{
+		goAhead = true;
+		ipPortMtx.lock();
+		for (size_t i=0; i<ipPortMtxVctr.size(); i++)
+		{
+			if (ipPortMtxVctr[i] == ipPort)
+			{
+				goAhead = false;
+				break;
+			}
+		}
+		if (goAhead)	// add to monitor before goAhead
+		{
+			//cout << ipPort << " added to monitor." << endl;
+			ipPortMtxVctr.push_back(ipPort);
+		}
+		ipPortMtx.unlock();
+	}while(!goAhead);
+}
+
+void StatsReporter::exitMonitor(string ipPort)
+{
+	ipPortMtx.lock();
+	for (size_t i=0; i<ipPortMtxVctr.size(); i++)
+	{
+		if (ipPortMtxVctr[i] == ipPort)
+		{
+			ipPortMtxVctr.erase(ipPortMtxVctr.begin() + i);
+			//cout << ipPort << " removed from monitor." << endl;
+			break;
+		}
+	}
+	ipPortMtx.unlock();
+}
+
 size_t StatsReporter::getPortStatus(struct in_addr ipAddr, uint16_t port, string &oldSts)
 {
-	// Check whether supplied ipAddr was previously added to report
-	string ipAddrStr = string(inet_ntoa(ipAddr));
+	string ipAddrStr = string(inet_ntoa(ipAddr));	
+
+	// Check whether supplied ipAddr was previously added to report	
 	if (report.count(ipAddrStr) == 0) // If not, add it to report with an empty port status map
 		report[ipAddrStr] = map<string, vector<PortStatus>>();
 
@@ -43,7 +83,6 @@ size_t StatsReporter::getPortStatus(struct in_addr ipAddr, uint16_t port, string
 			//cout << "Found " << itr->first << " port #" << to_string(portStsVctr[i].port) << endl;
 			if (portStsVctr[i].port == port)
 				return i;
-				//return portStsVctr[i];
 		}
 	}
 
@@ -56,30 +95,29 @@ size_t StatsReporter::getPortStatus(struct in_addr ipAddr, uint16_t port, string
 	PortStatus portSts;
 	portSts.port = port;
 	portStsMap[portDefaultSts].push_back(portSts);
-	cout << "Added port #" << to_string(port) << " to port-status " << portDefaultSts << endl;
-	//return portStsMap[portDefaultSts].back();
+	//cout << "Added port #" << to_string(port) << " to port-status " << portDefaultSts << endl;
 	return portStsMap[portDefaultSts].size() - 1;
 }
 
 void StatsReporter::updatePortStatus(struct in_addr ipAddr, uint16_t port, enum SCAN_TECHNIQUE scanType, enum PORT_STATUS portSts)
 {
 	//cout << "Updating " << string(inet_ntoa(ipAddr)) << " port #" << to_string(port) << " scan-type " << KNOWN_SCANS[scanType] << " status " << PortStatus::getStatusString(portSts) << endl;
-	//PortStatus portStatus = getPortStatus(ipAddr, port);
+	string ipAddrStr = string(inet_ntoa(ipAddr));
 	string oldSts;
+	enterMonitor(ipAddrStr + ":" + to_string(port));
 	size_t portStsVctrIdx = getPortStatus(ipAddr, port, oldSts);
-	PortStatus &portStatus = report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx];
-	//string oldSts = portStatus.getConclusion();
+	PortStatus &portStatus = report[ipAddrStr][oldSts][portStsVctrIdx];	
 	portStatus.scanStatus[scanType] = portSts;
-	//for (map<enum SCAN_TECHNIQUE, enum PORT_STATUS>::iterator itr = portStatus.scanStatus.begin(); \
-			itr != portStatus.scanStatus.end(); ++itr)
-		//cout << portStatus.port << " " << KNOWN_SCANS[itr->first] << " " << PortStatus::getStatusString(itr->second) << endl;
 	string newSts = portStatus.getConclusion();
 
 	// If status change detected, relocate PortStatus to new status map
 	if (oldSts != newSts)
-	{
-		string ipAddrStr = string(inet_ntoa(ipAddr));
+	{	
 		map<string, vector<PortStatus>> &portStsMap = report[ipAddrStr];
+
+		if (portStsMap.count(newSts) == 0)
+			portStsMap[newSts] = vector<PortStatus>();
+		portStsMap[newSts].push_back(portStatus);
 
 		vector<PortStatus> &oldStsVctr = portStsMap[oldSts];
 		for (size_t i=0; i < oldStsVctr.size(); i++)
@@ -88,22 +126,22 @@ void StatsReporter::updatePortStatus(struct in_addr ipAddr, uint16_t port, enum 
 			{
 				oldStsVctr.erase(oldStsVctr.begin() + i);
 			}
-		}
-		if (portStsMap.count(newSts) == 0)
-			portStsMap[newSts] = vector<PortStatus>();
-
-		portStsMap[newSts].push_back(portStatus);
-		//cout << "Added port #" << to_string(portStatus.port) << " to port-status " << newSts << endl;
-	}
+		}	
+		//cout << "Moved port #" << to_string(portStatus.port) << " from " << oldSts << " to " << newSts << endl;
+	}	
+	exitMonitor(ipAddrStr + ":" + to_string(port));
 }
 
 void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, string svc, string version)
 {
+	string ipAddrStr = string(inet_ntoa(ipAddr));
 	string oldSts;
+	enterMonitor(ipAddrStr + ":" + to_string(port));
 	size_t portStsVctrIdx = getPortStatus(ipAddr, port, oldSts);
 	PortStatus &portStatus = report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx];
 	portStatus.serviceName = svc;
 	portStatus.protocolVersion = version;
+	exitMonitor(ipAddrStr + ":" + to_string(port));
 }
 
 void StatsReporter::displayReport()
@@ -114,7 +152,7 @@ void StatsReporter::displayReport()
 			ipItr != report.end(); ++ipItr)
 	{
 		cout << endl << "IP address: " << ipItr->first << endl;
-		//map<string, vector<PortStatus>> portStatusMap = ipItr->second;
+		//map<string, vector<PortStatus>> &portStatusMap = ipItr->second;
 		for (map<string, vector<PortStatus>>::iterator stsItr = ipItr->second.begin(); \
 				stsItr != ipItr->second.end(); ++stsItr)
 		{
@@ -125,15 +163,9 @@ void StatsReporter::displayReport()
 				cout << "----------------------------------------------------------------------------------------------------------------------------------------------";
 
 				vector<PortStatus> portStatii = stsItr->second;
-				//uint16_t lastPrintedPort = 0;
 				for (size_t i=0; i < portStatii.size(); i++)
 				{
-					//cout << endl << (i+1) << "] ";
-					//if (lastPrintedPort != portStatii[i].port)
-					//{
-					//	lastPrintedPort = portStatii[i].port;
-						cout << endl << to_string(portStatii[i].port) << "\t";
-					//}
+					cout << endl << to_string(portStatii[i].port) << "(" << portStatii[i].scanStatus.size() << ")" << "\t";
 					bool printConclusion = true;
 					uint8_t maxStsOnSameLine = 2;
 					for (map<enum SCAN_TECHNIQUE, enum PORT_STATUS>::iterator scnItr = portStatii[i].scanStatus.begin(); \
@@ -153,7 +185,7 @@ void StatsReporter::displayReport()
 						}	
 					}	
 				}
-				cout << endl;
+				cout << endl << endl;
 			}
 		}
 	}

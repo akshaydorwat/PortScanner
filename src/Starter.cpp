@@ -8,6 +8,7 @@
 
 // user defined header
 #include "Logger.hpp"
+#include "UniquePortGenerator.hpp"
 #include "PortScannerUtils.hpp"
 #include "PacketScanner.hpp"
 #include "JobPool.hpp"
@@ -275,11 +276,19 @@ int main (int argc, char **argv)
 	pool.init();
 	jobCreator(pool, data, packetScanner->deviceIp);
 	pool.delPool(false);
+	
+	/*join the expensive pacap loop thread*/
+	pcap_breakloop(pd);
+	pthread_join(tid, NULL);
+	pcap_close(pd);
 
 	/*Display status*/
 	stsRptr->displayReport();
 
-	// display status function call
+	/*free memory*/
+	delete Logger::getInstance();
+	delete UniquePortGenerator::getInstance();
+	delete PacketScanner::getPacketScanner();
 	
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

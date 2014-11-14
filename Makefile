@@ -46,4 +46,7 @@ tar:
 	tar -cvf portScanner.tar Makefile README src
 
 run:
-	sudo ./portScanner --ports 53,80,143,22 --ip 75.75.75.75  --speedup 4 --scan UDP
+	sudo ./portScanner --ports 43 --file ip_list --speedup 50 --scan SYN
+
+valgrind:
+	sudo valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all  --track-origins=yes --log-file=mem.log ./portScanner --ports 22,24,43,53,80,143,110 --file ip_list --speedup 50 --scan SYN ACK NULL FIN XMAS UDP
