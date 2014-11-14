@@ -46,4 +46,4 @@ tar:
 	tar -cvf portScanner.tar Makefile README src
 
 run:
-	sudo ./portScanner --ports 53,80,143,22 --ip 75.75.75.75  --speedup 4 --scan SYN ACK NULL FIN XMAS
+	sudo ./portScanner --ports 53,80,143,22 --ip 75.75.75.75  --speedup 4 --scan UDP
