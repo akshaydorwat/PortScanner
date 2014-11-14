@@ -11,6 +11,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <chrono>
 
 #include <inttypes.h>
 #include <arpa/inet.h>
@@ -146,7 +147,8 @@ void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, st
 
 void StatsReporter::displayReport()
 {
-	cout << endl << "Scan took " << " seconds" << endl;
+	size_t endTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count() - startTime;
+	cout << endl << "Scan took " << to_string(endTime / 1000.0) << " seconds" << endl;
 
 	for (map<string, map<string, vector<PortStatus>>>::iterator ipItr = report.begin(); \
 			ipItr != report.end(); ++ipItr)

@@ -14,11 +14,12 @@
 
 #include <string>
 #include <map>
+#include <chrono>
 
-// c lib
 #include <inttypes.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+//#include <time.h>
 
 #include "PortStatus.hpp"
 #include "Starter.hpp"
@@ -29,7 +30,9 @@ using namespace std;
 class StatsReporter
 {
 	private:
-		static StatsReporter *stsRptr;
+		static StatsReporter *stsRptr;						// singleton instance of StatsReporter
+
+		size_t startTime;
 		Mutex ipPortMtx;
 		vector<string> ipPortMtxVctr;
 		map<string, map<string, vector<PortStatus>>> report;
@@ -46,7 +49,10 @@ class StatsReporter
 		static StatsReporter* getStatsReporter()       // obtain the singleton instance
 		{
 			if (!stsRptr)
+			{
 				stsRptr = new StatsReporter();
+				stsRptr->startTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+			}
 
 			return stsRptr;
 		}

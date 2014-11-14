@@ -289,6 +289,6 @@ int main (int argc, char **argv)
 	delete Logger::getInstance();
 	delete UniquePortGenerator::getInstance();
 	delete PacketScanner::getPacketScanner();
-	
+	delete StatsReporter::getStatsReporter();
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
