@@ -28,7 +28,8 @@ string PortStatus::getScanStatus(enum SCAN_TECHNIQUE scanType)
 string PortStatus::getConclusion()
 {
 	int min = CLOSED;
-	for (map<enum SCAN_TECHNIQUE, enum PORT_STATUS>::iterator itr = scanStatus.begin(); \
+	map<enum SCAN_TECHNIQUE, enum PORT_STATUS>::iterator itr;
+	for (itr = scanStatus.begin(); \
 			itr != scanStatus.end(); ++itr)
 	{
 		if (min > (int) itr->second)

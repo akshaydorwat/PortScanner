@@ -8,6 +8,7 @@
 #include "PortStatus.hpp"
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <map>
 #include <vector>
@@ -15,6 +16,7 @@
 
 #include <inttypes.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
 using namespace std;
 
@@ -38,7 +40,7 @@ void StatsReporter::enterMonitor(string ipPort)
 		}
 		if (goAhead)	// add to monitor before goAhead
 		{
-			//cout << ipPort << " added to monitor." << endl;
+			//cout << ipPort << " (+) locked" << endl;//" added to monitor." << endl;
 			ipPortMtxVctr.push_back(ipPort);
 		}
 		ipPortMtx.unlock();
@@ -53,7 +55,7 @@ void StatsReporter::exitMonitor(string ipPort)
 		if (ipPortMtxVctr[i] == ipPort)
 		{
 			ipPortMtxVctr.erase(ipPortMtxVctr.begin() + i);
-			//cout << ipPort << " removed from monitor." << endl;
+			//cout << ipPort << " (-) unlocked" << endl;//" removed from monitor." << endl;
 			break;
 		}
 	}
@@ -139,56 +141,118 @@ void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, st
 	string oldSts;
 	enterMonitor(ipAddrStr + ":" + to_string(port));
 	size_t portStsVctrIdx = getPortStatus(ipAddr, port, oldSts);
-	PortStatus &portStatus = report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx];
-	portStatus.serviceName = svc;
-	portStatus.protocolVersion = version;
+	//PortStatus &portStatus = report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx];
+
+	if (report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName.size() == 0)
+	{	
+		if (svc.size() == 0)
+		{
+			svc = "Unassigned";	// default service name = Unassigned
+
+			if (port <= 1024)
+			{
+				struct servent *service;
+				service = getservbyport(htons(port), NULL);
+				if (service && service != NULL && service->s_name != NULL)
+					svc = string(service->s_name);
+				endservent();
+			}
+		}
+		//cout << ipAddrStr << ":" << to_string(port) << " service: " << svc << endl;
+		report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName = svc;
+
+		if (svc == "Unassigned")
+			version = "";
+	}
+
+	report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].protocolVersion = version;
+	//cout << ipAddrStr << ":" << to_string(port) << " service: [" << svc << "] actual: [" << report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName << "]" << endl;
 	exitMonitor(ipAddrStr + ":" + to_string(port));
 }
 
 void StatsReporter::displayReport()
 {
-	size_t endTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count() - startTime;
-	cout << endl << "Scan took " << to_string(endTime / 1000.0) << " seconds" << endl;
+	cout << endl << "Scan took " << fixed << setprecision(2) << ((endTime - startTime) / 1000.0) << " seconds" << endl;
 
 	for (map<string, map<string, vector<PortStatus>>>::iterator ipItr = report.begin(); \
 			ipItr != report.end(); ++ipItr)
 	{
-		cout << endl << "IP address: " << ipItr->first << endl;
-		//map<string, vector<PortStatus>> &portStatusMap = ipItr->second;
+		// separator
+		cout << endl << "+";
+		for (size_t i=0; i < PORT_COL + SVC_COL + RSLT_COL + CON_COL; i++)
+			cout << "-";
+		cout << "+" << endl;
+
+		// IP
+		cout << "|" << " IP address: " << left << setw(PORT_COL+SVC_COL+RSLT_COL+CON_COL - 13)  << ipItr->first << "|" << endl;
+		// blank
+		cout << "|" << right << setw(PORT_COL+SVC_COL+RSLT_COL+CON_COL + 1) << "|";
+
 		for (map<string, vector<PortStatus>>::iterator stsItr = ipItr->second.begin(); \
 				stsItr != ipItr->second.end(); ++stsItr)
 		{
 			if (stsItr->second.size() > 0)
 			{
-				cout << endl << stsItr->first << " ports:" << endl;
-				cout << "Port\tScan Results\t\t\t\t\t\t\t\t\t\t\t\t\t\tConclusion" << endl;
-				cout << "----------------------------------------------------------------------------------------------------------------------------------------------";
+				// table title
+				cout << endl << "| " << left << setw(PORT_COL+SVC_COL+RSLT_COL+CON_COL - 1) << (stsItr->first +  " ports ...") << "|" << endl;
+				// table header
+				cout << left << setw(PORT_COL) << "| Port ";
+				cout << left << setw(SVC_COL) << "| Service Name (if applicable) ";
+				cout << left << setw(RSLT_COL) << "| Results ";
+				cout << left << setw(CON_COL) << "| Conclusion " << " |";
+				// separator
+				cout << endl << "+";
+				for (size_t i=0; i < PORT_COL + SVC_COL + RSLT_COL + CON_COL; i++)
+				{
+					if (i == PORT_COL-1 || i == PORT_COL+SVC_COL-1 || i == PORT_COL+SVC_COL+RSLT_COL-1)
+						cout << "+";
+					else
+						cout << "-";
+				}
+				cout << "+";
 
 				vector<PortStatus> portStatii = stsItr->second;
 				for (size_t i=0; i < portStatii.size(); i++)
 				{
-					cout << endl << to_string(portStatii[i].port) << "(" << portStatii[i].scanStatus.size() << ")" << "\t";
+					// Port
+					cout << endl << left << setw(PORT_COL) << ("| " + to_string(portStatii[i].port) + " ");
+
+					// Service Name
+					string v = portStatii[i].protocolVersion.size() > 0 ? " " + portStatii[i].protocolVersion + " ": "";
+					string svc = portStatii[i].serviceName.size() + v.size() > SVC_COL - 4 ? portStatii[i].serviceName.substr(0, SVC_COL-4-v.size()) : portStatii[i].serviceName;
+					cout << left << setw(SVC_COL) << ("| " + svc + v);
+
+					// Results
 					bool printConclusion = true;
-					uint8_t maxStsOnSameLine = 2;
 					for (map<enum SCAN_TECHNIQUE, enum PORT_STATUS>::iterator scnItr = portStatii[i].scanStatus.begin(); \
 							scnItr != portStatii[i].scanStatus.end(); ++scnItr)
 					{
-						cout << KNOWN_SCANS[scnItr->first] << "(" << PortStatus::getStatusString(scnItr->second) << ")  ";
-						maxStsOnSameLine--;
-						if (printConclusion && (scnItr == portStatii[i].scanStatus.end() || maxStsOnSameLine == 0))
+						if (!printConclusion)
+							cout << endl << left << setw(PORT_COL) << "|" << setw(SVC_COL) << "|";
+
+						cout << left << setw(7) << ("| " + KNOWN_SCANS[scnItr->first]) << right << setw(RSLT_COL-7) << ("(" + PortStatus::getStatusString(scnItr->second) + ") ");
+						if (printConclusion)
 						{
+							// Conclusion
 							printConclusion = false;
-							cout << "\t\t\t\t\t\t\t\t\t\t\t" << portStatii[i].getConclusion();
+							cout << left << setw(CON_COL) << ("| " + stsItr->first) << " |";//portStatii[i].getConclusion();
 						}
-						if (maxStsOnSameLine == 0)
-						{
-							maxStsOnSameLine = 2;
-							cout << endl << "     \t";
-						}	
-					}	
+						else
+							cout << "|" << right << setw(CON_COL+1) << "|";	
+					}
+					// separator
+					cout << endl << left << setw(PORT_COL) << "|" << setw(SVC_COL) << "|" << setw(RSLT_COL) << "|" << setw(CON_COL) << "|" << " |";
 				}
-				cout << endl << endl;
+				// blank
+				cout << endl << "|" << right << setw(PORT_COL+SVC_COL+RSLT_COL+CON_COL + 1) << "|";
 			}
 		}
+		// separator
+		cout << endl << "+";
+		for (size_t i=0; i < PORT_COL + SVC_COL + RSLT_COL + CON_COL; i++)
+			cout << "-";
+		cout << "+" << endl;
+		cout << endl;
 	}
+	cout << endl << endl;
 }
