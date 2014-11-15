@@ -27,19 +27,19 @@ static const string BASE_PACKET_FILTER = "tcp or udp or icmp";
 class PacketScanner
 {
 private:
-	static PacketScanner* packetScanner;
+	//static PacketScanner* packetScanner;
 	map<int, function<void(const u_char*)>> callbackMap;
 	Mutex mLock;
 
 	PacketScanner(){};								// private constructor
 	PacketScanner(PacketScanner const&){};						// private copy constructor
-	PacketScanner& operator=(PacketScanner const&){ return *packetScanner; };	// private assignment operator
+	PacketScanner& operator=(PacketScanner const&);//{ return *packetScanner; };	// private assignment operator
 
 public:
 	uint8_t linkHeaderLength;
 	struct sockaddr_in deviceIp;
 
-	static PacketScanner* getPacketScanner();	// obtain the singleton instance
+	static PacketScanner& getPacketScanner();	// obtain the singleton instance
 	static void* scanForever( void *);
 	static void makeCallbacks(u_char *usr, const struct pcap_pkthdr *pkthdr, const u_char *pktptr);
 	pcap_t* init();					// initialize on default device

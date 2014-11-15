@@ -35,7 +35,7 @@ using namespace std;
 class StatsReporter
 {
 	private:
-		static StatsReporter *stsRptr;						// singleton instance of StatsReporter
+		//static StatsReporter *stsRptr;						// singleton instance of StatsReporter
 
 		size_t startTime;
 		size_t endTime;
@@ -45,20 +45,21 @@ class StatsReporter
 
 		StatsReporter(){};							// private constructor
 		StatsReporter(StatsReporter const&){};                			// private copy constructor
-		StatsReporter& operator=(StatsReporter const&){ return *stsRptr; };	// private assignment operator
+		StatsReporter& operator=(StatsReporter const&);//{ return *stsRptr; };	// private assignment operator
 
 		void enterMonitor(string ipPort);
 		void exitMonitor(string ipPort);
 		size_t getPortStatus(struct in_addr ipAddr, uint16_t port, string &oldSts);
 
 	public:
-		static StatsReporter* getStatsReporter()       // obtain the singleton instance
+		static StatsReporter& getStatsReporter()       // obtain the singleton instance
 		{
-			if (!stsRptr)
-			{
-				stsRptr = new StatsReporter();
-				stsRptr->startTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
-			}
+			static StatsReporter stsRptr;
+			//if (!stsRptr)
+			//{
+				//stsRptr = new StatsReporter();
+				stsRptr.startTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+			//}
 
 			return stsRptr;
 		}

@@ -88,8 +88,8 @@ void ACKscan::handle(){
 	}
 	
 	// register callback with filter
-	PacketScanner *scanner =  PacketScanner::getPacketScanner();	
-	scanner->registerCallback(sfd, bind(&Scan::filterCallback, this, std::placeholders::_1));
+	PacketScanner &scanner =  PacketScanner::getPacketScanner();	
+	scanner.registerCallback(sfd, bind(&Scan::filterCallback, this, std::placeholders::_1));
 	
 	// send packet
 	send();
@@ -104,7 +104,7 @@ void ACKscan::handle(){
 	}
 
 	// unregister callback wih filter
-	scanner->unregisterCallback(sfd);
+	scanner.unregisterCallback(sfd);
 
 	if(numOfPacketReceived == 0){
 		status = FILTERED;
