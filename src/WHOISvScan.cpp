@@ -89,8 +89,8 @@ void WHOISvScan::handle(){
 			if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
 				string version = getVersion(buff, ret);
 				LOG(DEBUG, debugInfo + "WHOIS : " + version);
-				StatsReporter *stsRptr = StatsReporter::getStatsReporter();	
-				stsRptr->updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
+				StatsReporter &stsRptr = StatsReporter::getStatsReporter();	
+				stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
 				break;
 			}
 		}

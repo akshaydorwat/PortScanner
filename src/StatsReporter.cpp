@@ -71,20 +71,21 @@ size_t StatsReporter::getPortStatus(struct in_addr ipAddr, uint16_t port, string
 		report[ipAddrStr] = map<string, vector<PortStatus>>();
 
 	// Get the port status map corresponding to the supplied ipAddr
-	map<string, vector<PortStatus>> &portStsMap = report[ipAddrStr];
+	//map<string, vector<PortStatus>> &portStsMap = report[ipAddrStr];
+
 	//cout << "Found IP address " << ipAddrStr << endl;
 
 	// Check and return and existing PortStatus against the supplied port
-	for (map<string, vector<PortStatus>>::iterator itr = portStsMap.begin(); \
-			itr != portStsMap.end(); ++itr)
+	for (map<string, vector<PortStatus>>::iterator itr = report[ipAddrStr].begin(); \
+			itr != report[ipAddrStr].end(); ++itr)
 	{
 		//cout << "Found port-status #" << itr->first << endl;
 		oldSts = itr->first;
-		vector<PortStatus> &portStsVctr = itr->second;
-		for (size_t i=0; i < portStsVctr.size(); i++)
+		//vector<PortStatus> &portStsVctr = itr->second;
+		for (size_t i=0; i < itr->second.size(); i++)
 		{
 			//cout << "Found " << itr->first << " port #" << to_string(portStsVctr[i].port) << endl;
-			if (portStsVctr[i].port == port)
+			if (itr->second[i].port == port)
 				return i;
 		}
 	}
@@ -92,14 +93,14 @@ size_t StatsReporter::getPortStatus(struct in_addr ipAddr, uint16_t port, string
 	// If no PortStatus exists for ipAddr:port, create a new CLOSED entry
 	string portDefaultSts = "CLOSED";
 	oldSts = portDefaultSts;
-	if (portStsMap.count(portDefaultSts) == 0)
-		portStsMap[portDefaultSts] = vector<PortStatus>();
+	if (report[ipAddrStr].count(portDefaultSts) == 0)
+		report[ipAddrStr][portDefaultSts] = vector<PortStatus>();
 
 	PortStatus portSts;
 	portSts.port = port;
-	portStsMap[portDefaultSts].push_back(portSts);
+	report[ipAddrStr][portDefaultSts].push_back(portSts);
 	//cout << "Added port #" << to_string(port) << " to port-status " << portDefaultSts << endl;
-	return portStsMap[portDefaultSts].size() - 1;
+	return report[ipAddrStr][portDefaultSts].size() - 1;
 }
 
 void StatsReporter::updatePortStatus(struct in_addr ipAddr, uint16_t port, enum SCAN_TECHNIQUE scanType, enum PORT_STATUS portSts)

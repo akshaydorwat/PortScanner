@@ -136,7 +136,7 @@ void* PacketScanner::scanForever( void *p_pd)
 	}
 
 	// Start capturing packets.
-	if (pcap_loop(pd, 0, (pcap_handler) makeCallbacks, (u_char*) pktScnr) < 0)
+	if (pcap_loop(pd, 0, (pcap_handler) makeCallbacks, (u_char*) &pktScnr) < 0)
 		LOG(DEBUG, "PacketScanner : Terminating PCAP loop. " + string(pcap_geterr(pd)));
 
 	return NULL;

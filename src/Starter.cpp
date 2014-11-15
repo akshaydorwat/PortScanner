@@ -297,8 +297,8 @@ int main (int argc, char **argv)
 		l->addOutputStream(&cout, INFO, string("%F %T"));
 	}
 	
-	if(data.log_file.size() == 3){
-		log_file.open(data.log_file, ios::out | ios::trunc);
+	if(data.log_file.size() > 0){
+		log_file.open(data.log_file, ios::out | ios::app);
 		l->addOutputStream(&log_file, ERROR, string("%F %T"));
 	}
 
