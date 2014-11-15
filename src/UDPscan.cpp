@@ -62,14 +62,14 @@ bool UDPscan::init(){
 	// create raw socket
 	sfd = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 	if(sfd < 0 ){
-		LOG(ERROR,"Failed to create RAW socket");
+		LOG(ERROR, debugInfo +"Failed to create RAW socket");
 		return false;
 	}else{
 		//LOG(DEBUG,"Socket Initialized");
 	}
 	// set IPHDRINCL fasle                                                                                       
 	if(setsockopt(sfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(zero)) < 0){
-		LOG(ERROR, "Unable to set socket option IPHDEINCL to Flase");
+		LOG(ERROR, debugInfo + "Unable to set socket option IPHDEINCL to Flase");
 		return false;
 	}else{
 		//LOG(DEBUG, "IPHDRINCL set to False");
@@ -79,10 +79,10 @@ bool UDPscan::init(){
 
 bool UDPscan::send(){
 	if(sendto(sfd, buff, packetLen, 0, (struct sockaddr *)&dst, sizeof(dst)) < 0){
-		LOG(ERROR, "Sending failed");
+		LOG(ERROR, debugInfo + "Sending failed");
 		return false;
 	}else{
-		LOG(DEBUG, debugInfo + " packet sent successfully");
+		LOG(DEBUG, debugInfo + "packet sent successfully");
 		numOfPacketSent++;
 	}
 	return true;
@@ -171,8 +171,8 @@ void UDPscan::filterCallback(const u_char *packet){
 			icmp_ip_hdr = &icmp_hdr->icmp_ip;
 			source = icmp_ip_hdr->ip_src.s_addr;
 			dest =   icmp_ip_hdr->ip_dst.s_addr;
-			//LOG(DEBUG, "Source :" + string(inet_ntoa(icmp_ip_hdr->ip_src)));
-			//LOG(DEBUG,"Destination : " + string(inet_ntoa(icmp_ip_hdr->ip_dst)));
+			//LOG(DEBUG, "Source :"+ string(inet_ntoa(icmp_ip_hdr->ip_src)));
+			//LOG(DEBUG,"Destination : "+ string(inet_ntoa(icmp_ip_hdr->ip_dst)));
 			if((memcmp(&source, &src.sin_addr.s_addr, sizeof(uint32_t)) != 0 ) || 
 			   (memcmp(&dest, &dst.sin_addr.s_addr, sizeof(uint32_t)) != 0)){
 				return;
@@ -185,8 +185,8 @@ void UDPscan::filterCallback(const u_char *packet){
 			udp_hdr = (struct udphdr *)((u_char*)icmp_ip_hdr+runner);
 			s_port = ntohs(udp_hdr->source);
 			d_port = ntohs(udp_hdr->dest);
-			//LOG(DEBUG, "Source port :" + to_string((int)s_port));
-			//LOG(DEBUG, "dest port :" + to_string((int)d_port));
+			//LOG(DEBUG, "Source port :"+ to_string((int)s_port));
+			//LOG(DEBUG, "dest port :"+ to_string((int)d_port));
 			if((memcmp(&d_port, &dst.sin_port, sizeof(uint16_t)) != 0) || 
 			   (memcmp(&s_port, &src.sin_port, sizeof(uint16_t)) != 0)){
 				return;
@@ -196,7 +196,7 @@ void UDPscan::filterCallback(const u_char *packet){
 			case ICMP_UNREACH_PORT:
 				numOfPacketReceived++;
 				status = CLOSED;
-				LOG(DEBUG, debugInfo + " UNREACHABLE HOST, Port is CLOSED");
+				LOG(DEBUG, debugInfo + "UNREACHABLE HOST, Port is CLOSED");
 				break;
 
 			case ICMP_UNREACH_HOST:
@@ -207,7 +207,7 @@ void UDPscan::filterCallback(const u_char *packet){
 				// set status 
 				numOfPacketReceived++;
 				status = FILTERED;
-				LOG(DEBUG, debugInfo + " UNREACHABLE HOST, Port is FILTERED");
+				LOG(DEBUG, debugInfo + "UNREACHABLE HOST, Port is FILTERED");
 				break;
 
 			default:

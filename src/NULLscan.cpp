@@ -52,14 +52,14 @@ bool NULLscan::init(){
 	// create raw socket
 	sfd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
 	if(sfd < 0 ){
-		LOG(ERROR,"Failed to create RAW socket");
+		LOG(ERROR, debugInfo +"Failed to create RAW socket");
 		return false;
 	}else{
 		//LOG(DEBUG,"Socket Initialized");
 	}
 	// set IPHDRINCL fasle                                                                                        
 	if(setsockopt(sfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(zero)) < 0){
-		LOG(ERROR, "Unable to set socket option IPHDEINCL to Flase");
+		LOG(ERROR, debugInfo + "Unable to set socket option IPHDEINCL to Flase");
 		return false;
 	}else{
 		//LOG(DEBUG, "IPHDRINCL set to False");
@@ -69,10 +69,10 @@ bool NULLscan::init(){
 
 bool NULLscan::send(){
 	if(sendto(sfd, buff, sizeof(struct tcphdr), 0, (struct sockaddr *)&dst, sizeof(dst)) < 0){
-		LOG(ERROR, "Sending failed");
+		LOG(ERROR, debugInfo + "Sending failed");
 		return false;
 	}else{
-		LOG(DEBUG, debugInfo + " PACKET sent successfully");
+		LOG(DEBUG, debugInfo + "PACKET sent successfully");
 		numOfPacketSent++;
 	}
 	return true;
@@ -143,7 +143,7 @@ void NULLscan::filterCallback(const u_char *packet){
 		// compare the ports
 		if((memcmp(&s_port, &dst.sin_port, sizeof(uint16_t)) != 0) || 
 		   (memcmp(&d_port, &src.sin_port, sizeof(uint16_t)) != 0)){
-			LOG(DEBUG, "Ports didnt match");
+			//LOG(DEBUG, "Ports didnt match");
 			return;
 		}
 
@@ -186,8 +186,8 @@ void NULLscan::filterCallback(const u_char *packet){
 				icmp_ip_hdr = &icmp_hdr->icmp_ip;
 				source = icmp_ip_hdr->ip_src.s_addr;
 				dest =   icmp_ip_hdr->ip_dst.s_addr;
-				//LOG(DEBUG, "Source :" + string(inet_ntoa(icmp_ip_hdr->ip_src)));
-				//LOG(DEBUG,"Destination : " + string(inet_ntoa(icmp_ip_hdr->ip_dst)));
+				//LOG(DEBUG, "Source :"+ string(inet_ntoa(icmp_ip_hdr->ip_src)));
+				//LOG(DEBUG,"Destination : "+ string(inet_ntoa(icmp_ip_hdr->ip_dst)));
 				if((memcmp(&source, &src.sin_addr.s_addr, sizeof(uint32_t)) != 0 ) || 
 				   (memcmp(&dest, &dst.sin_addr.s_addr, sizeof(uint32_t)) != 0)){
 					return;
@@ -201,8 +201,8 @@ void NULLscan::filterCallback(const u_char *packet){
 				tcp_hdr = (struct tcphdr *)((u_char*)icmp_ip_hdr+runner);
 				s_port = ntohs(tcp_hdr->source);
 				d_port = ntohs(tcp_hdr->dest);
-				//LOG(DEBUG, "Source port :" + to_string((int)s_port));
-				//LOG(DEBUG, "dest port :" + to_string((int)d_port));
+				//LOG(DEBUG, "Source port :"+ to_string((int)s_port));
+				//LOG(DEBUG, "dest port :"+ to_string((int)d_port));
 				if((memcmp(&d_port, &dst.sin_port, sizeof(uint16_t)) != 0) || 
 				   (memcmp(&s_port, &src.sin_port, sizeof(uint16_t)) != 0)){
 					return;
@@ -210,7 +210,7 @@ void NULLscan::filterCallback(const u_char *packet){
 				// set status 
 				numOfPacketReceived++;
 				status = FILTERED;
-				LOG(DEBUG,  debugInfo + " UNREACHABLE HOST, Port is FILTERED");
+				LOG(DEBUG,  debugInfo + "UNREACHABLE HOST, Port is FILTERED");
 				break;
 
 			default:

@@ -75,7 +75,7 @@ bool ACKscan::send(){
 		LOG(ERROR, "Sending failed");
 		return false;
 	}else{
-		LOG(DEBUG, debugInfo + " PACKET sent successfully");
+		LOG(DEBUG, debugInfo + "PACKET sent successfully");
 		numOfPacketSent++;
 	}
 	return true;
@@ -153,7 +153,7 @@ void ACKscan::filterCallback(const u_char *packet){
 		
 		if((tcp_hdr->rst)){
 			status = UNFILTERED;
-			LOG(DEBUG, debugInfo + " RST flag set, Port is closed");
+			LOG(DEBUG, debugInfo + "RST flag set, Port is closed");
 		}
 		break;
 		

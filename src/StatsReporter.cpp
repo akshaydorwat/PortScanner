@@ -213,7 +213,7 @@ void StatsReporter::displayReport()
 				}
 				cout << "+";
 
-				vector<PortStatus> portStatii = stsItr->second;
+				vector<PortStatus> &portStatii = stsItr->second;
 				for (size_t i=0; i < portStatii.size(); i++)
 				{
 					// Port

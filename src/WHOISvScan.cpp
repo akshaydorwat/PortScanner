@@ -27,7 +27,7 @@ bool WHOISvScan::init(){
 		LOG(WARNING,"Failed to create TCP socket");
 		return false;
 	}else{
-		LOG(DEBUG,"Socket Initialized");
+		LOG(DEBUG,debugInfo + "Socket Initialized");
 	}
 	
 	// set timeout                                                                                       
@@ -35,17 +35,17 @@ bool WHOISvScan::init(){
 	time_out.tv_usec = 0;
 
 	if(setsockopt(sfd,  SOL_SOCKET, SO_SNDTIMEO, &time_out, sizeof(struct timeval)) < 0){
-		LOG(ERROR, "Unable to set socket option SO_SNDTIMEO to Flase");
+		LOG(WARNING, debugInfo +  "Unable to set socket option SO_SNDTIMEO to Flase");
 		return false;
 	}else{
-		LOG(DEBUG, "send TIME OUT set");
+		LOG(DEBUG, debugInfo +  "send TIME OUT set");
 	}
 
 	if(setsockopt(sfd,  SOL_SOCKET, SO_RCVTIMEO, &time_out, sizeof(struct timeval)) < 0){
-		LOG(ERROR, "Unable to set socket option SO_RCVTIMEO to Flase");
+		LOG(WARNING, debugInfo + "Unable to set socket option SO_RCVTIMEO to Flase");
 		return false;
 	}else{
-		LOG(DEBUG, "send TIME OUT set");
+		LOG(DEBUG, debugInfo +  "send TIME OUT set");
 	}
 
 	// host to network short
@@ -54,7 +54,7 @@ bool WHOISvScan::init(){
 
 	// try to connect
 	if((ret = connect(sfd, (struct sockaddr *)&dst, sizeof(dst))) == -1){
-		LOG(ERROR, "Failed to connect ");
+		LOG(WARNING, debugInfo + "Failed to connect ");
 		return false;
 	}
 	return true;
@@ -63,10 +63,10 @@ bool WHOISvScan::init(){
 bool WHOISvScan::send(){
 	int ret;
 	if((ret = sendto(sfd, buff, packetLen, MSG_DONTWAIT, NULL, 0)) == -1){
-		LOG(ERROR, debugInfo + " failed to write data");
+		LOG(WARNING, debugInfo + "failed to write data");
 		return false;
 	}else{
-		LOG(DEBUG, debugInfo + " packet sent successfully");
+		LOG(DEBUG, debugInfo + "packet sent successfully");
 		numOfPacketSent++;
 	}
 	return true;
@@ -79,7 +79,7 @@ void WHOISvScan::handle(){
 
 	// Initialise the packet and socket
 	if(!init()){
-		LOG(ERROR, debugInfo + " WHOIS init error");
+		LOG(WARNING, debugInfo + "WHOIS init error");
 		return;
 	}
 	
@@ -116,7 +116,7 @@ string WHOISvScan::getVersion(const char* buff, int &ret){
 }
 
 void WHOISvScan::filterCallback(const u_char *packet){
-	LOG(WARNING, debugInfo + " This method is not implemented");
+	LOG(WARNING, debugInfo + "This method is not implemented");
 }
 
 

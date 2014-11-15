@@ -73,6 +73,7 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 		{"ip",       required_argument,   NULL,  'i' },	// --ip 127.0.0.1
 		{"prefix",   required_argument,   NULL,  'r' },	// --prefix 127.143.151.123/24
 		{"file",     required_argument,   NULL,  'f' },	// --file filename.txt
+		{"log_file", required_argument,   NULL,  'o' },	// --file filename.txt
 		{"speedup",  required_argument,   NULL,  's' },	// --speedup 10
 		{"scan",     required_argument,   NULL,  'c' },	// --scan SYN NULL FIN XMAS
 		{NULL,          0,                NULL,   0 }
@@ -89,7 +90,7 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 	ifstream file;
 
 	// accepting nothing but long options by specifying optstring = ""
-	while ((opt = getopt_long(argc, argv, "", long_options, &optIdx)) != -1){ 
+	while ((opt = getopt_long(argc, argv, "v", long_options, &optIdx)) != -1){ 
 		switch (opt){
 		case 'h': // help
 			numOpts++;
@@ -140,10 +141,17 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 			numOpts++;
 			scanTechniques.push_back(optarg);
 			break;
+			
+		case 'v':
+			numOpts++;
+			data->verbose = true;
+			break;
+			
+		case 'o':
+			numOpts++;
+			data->log_file = optarg;
+			break;
 
-			/*case '?': // unsupported option
-			  default:
-			  break;*/
 		}
 	}
 
@@ -269,19 +277,31 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 int main (int argc, char **argv)
 {
 	/* Initialize Logger */
-	ofstream log_file (LOGFILE, ios::out | ios::trunc);
+
 	Logger *l = Logger::getInstance();
 	InputData data;
+	ofstream log_file;
+	data.verbose = false;
 
-	/*Log handlers*/
-	l->addOutputStream(&cout, ERROR, string("%F %T"));
-	l->addOutputStream(&log_file, ERROR, string("%F %T"));
 
 	/* parse command line arguments */
 	int ret = parse_args(argc, argv, &data);
 	if(!ret){
 		exit(EXIT_FAILURE);
 	}
+
+	/*Log handlers*/
+	if(data.verbose){
+		l->addOutputStream(&cout, ERROR, string("%F %T"));
+	}else{
+		l->addOutputStream(&cout, INFO, string("%F %T"));
+	}
+	
+	if(data.log_file.size() == 3){
+		log_file.open(data.log_file, ios::out | ios::trunc);
+		l->addOutputStream(&log_file, ERROR, string("%F %T"));
+	}
+
 	/* create stat reporter*/
 	StatsReporter *stsRptr = StatsReporter::getStatsReporter();
 

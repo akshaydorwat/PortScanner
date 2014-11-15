@@ -52,7 +52,7 @@ public:
 		numOfPacketReceived = 0;
 		factory = NULL;
 		//debugging
-		debugInfo = string(inet_ntoa(dst.sin_addr)) + ":" +	to_string((int)dst.sin_port) + "\t"	+ KNOWN_SCANS[scanType];
+		debugInfo = string(inet_ntoa(dst.sin_addr)) + ":" +	to_string((int)dst.sin_port) + "\t"	+ KNOWN_SCANS[scanType] + " ";
 	};
 	
 	virtual ~Scan(){

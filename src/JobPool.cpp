@@ -44,7 +44,7 @@ bool JobPool::init(){
 	
 	//change the state
 	state = STARTED;
-	LOG(INFO, "Created thread pool with size : " + to_string(numOfThreads));
+	LOG(DEBUG, "Created thread pool with size : " + to_string(numOfThreads));
 	
 	return true;
 }

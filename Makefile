@@ -48,10 +48,14 @@ tar:
 	tar -cvf portScanner.tar Makefile README src
 
 run:
-	sudo ./portScanner --ports 143 --ip 129.79.247.87 --speedup 50 --scan SYN
+	sudo ./portScanner --log_file LOG.log --ports 22,24,80,110,143,43,53 --ip 129.79.247.87 --speedup 50 --scan SYN UDP FIN NULL XMAS ACK
+
 
 service:
 	sudo ./portScanner --ports 43 --file service_ip --speedup 50 --scan SYN
+
+stress_test:
+	sudo ./portScanner --ports 22,24,80,110,143,43,53,700-1024 --file ip_list --speedup 50 --scan SYN UDP FIN NULL XMAS ACK
 
 valgrind:
 	sudo valgrind --tool=memcheck --leak-check=full  --track-origins=yes --log-file=mem.log ./portScanner --ports 22,24 --file ip_list --speedup 5 --scan SYN ACK FIN NULL

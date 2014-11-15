@@ -24,10 +24,10 @@ bool IMAPvScan::init(){
 	// create raw socket
 	sfd = socket(AF_INET, SOCK_STREAM, 0);
 	if(sfd < 0 ){
-		LOG(WARNING,"Failed to create TCP socket");
+		LOG(WARNING,debugInfo + "Failed to create TCP socket");
 		return false;
 	}else{
-		LOG(DEBUG,"Socket Initialized");
+		LOG(DEBUG, debugInfo + "Socket Initialized");
 	}
 	
 	// set timeout                                                                                       
@@ -35,17 +35,17 @@ bool IMAPvScan::init(){
 	time_out.tv_usec = 0;
 
 	if(setsockopt(sfd,  SOL_SOCKET, SO_SNDTIMEO, &time_out, sizeof(struct timeval)) < 0){
-		LOG(ERROR, "Unable to set socket option SO_SNDTIMEO to Flase");
+		LOG(WARNING, debugInfo + "Unable to set socket option SO_SNDTIMEO to Flase");
 		return false;
 	}else{
-		LOG(DEBUG, "send TIME OUT set");
+		LOG(DEBUG, debugInfo + "send TIME OUT set");
 	}
 
 	if(setsockopt(sfd,  SOL_SOCKET, SO_RCVTIMEO, &time_out, sizeof(struct timeval)) < 0){
-		LOG(ERROR, "Unable to set socket option SO_RCVTIMEO to Flase");
+		LOG(WARNING, debugInfo + "Unable to set socket option SO_RCVTIMEO to Flase");
 		return false;
 	}else{
-		LOG(DEBUG, "send TIME OUT set");
+		LOG(DEBUG, debugInfo + "send TIME OUT set");
 	}
 
 	// host to network short
@@ -54,7 +54,7 @@ bool IMAPvScan::init(){
 
 	// try to connect
 	if((ret = connect(sfd, (struct sockaddr *)&dst, sizeof(dst))) == -1){
-		LOG(ERROR, "Failed to connect ");
+		LOG(WARNING, debugInfo + "Failed to connect ");
 		return false;
 	}
 	return true;
@@ -62,13 +62,11 @@ bool IMAPvScan::init(){
 
 bool IMAPvScan::send(){
 	int ret;
-	std::cout << "Calling send" << std::endl;
 	if((ret = sendto(sfd, buff, packetLen, MSG_DONTWAIT, NULL, 0)) == -1){
-		LOG(ERROR, debugInfo + " failed to write data");
+		LOG(WARNING, debugInfo + "Failed to write data");
 		return false;
 	}else{
-		LOG(DEBUG, debugInfo + " packet sent successfully");
-		numOfPacketSent++;
+		LOG(DEBUG, debugInfo + "packet sent successfully");
 	}
 	return true;
 }
@@ -80,7 +78,7 @@ void IMAPvScan::handle(){
 
 	// Initialise the packet and socket
 	if(!init()){
-		LOG(ERROR, debugInfo + " IMAP init error");
+		LOG(WARNING, debugInfo + "init error");
 		return;
 	}
 	
@@ -89,7 +87,6 @@ void IMAPvScan::handle(){
 		if(send()){
 			if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
 				string version = getVersion(buff, ret);
-				cout << "================>VERSION (" << version.size() << ")" << version ;
 				if(version.size() > 0 ){
 					LOG(DEBUG, debugInfo + "ICMP : " + version);
 					StatsReporter *stsRptr = StatsReporter::getStatsReporter();	
@@ -106,7 +103,6 @@ string IMAPvScan::getVersion(const char* buff, int &ret){
 	size_t end;
 	string s = string(buff, ret);
 	string temp = "IMAP";
-	cout << debugInfo <<"=================>Output : " << s <<endl; 
 	if((start = s.find(temp)) != string::npos){
 		if((end = s.find(" ", start)) != string::npos){
 			return s.substr(start, end - start);
@@ -119,7 +115,5 @@ string IMAPvScan::getVersion(const char* buff, int &ret){
 }
 
 void IMAPvScan::filterCallback(const u_char *packet){
-	LOG(WARNING, debugInfo + " This method is not implemented");
+	LOG(WARNING, debugInfo + "This method is not implemented");
 }
-
-

@@ -60,6 +60,8 @@ struct InputData{
 	vector<string> scanTechniques;
 	vector<unsigned short> ports;
 	vector<sockaddr_in> ips;
+	bool verbose;
+	string log_file;
 	int numOfThreads;
 };
 #endif

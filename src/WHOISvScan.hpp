@@ -18,6 +18,7 @@ class WHOISvScan : public Scan {
 public:
 	WHOISvScan( struct sockaddr_in &p_src, struct sockaddr_in &p_dst, string &type ) 
 		: Scan(p_src, p_dst, type){
+		debugInfo = debugInfo + " WHOIS ";
 	};
 	
 	void handle();

@@ -75,7 +75,7 @@ bool SYNscan::send(){
 	if(sendto(sfd, buff, sizeof(struct tcphdr), 0, (struct sockaddr *)&dst, sizeof(dst)) < 0){
 		return false;
 	}else{
-		LOG(DEBUG, debugInfo + " packet sent successfully");
+		LOG(DEBUG, debugInfo + "packet sent successfully");
 		numOfPacketSent++;
 	}
 	return true;
@@ -147,7 +147,7 @@ void SYNscan::filterCallback(const u_char *packet){
 		// compare the ports
 		if((memcmp(&s_port, &dst.sin_port, sizeof(uint16_t)) != 0) || 
 		   (memcmp(&d_port, &src.sin_port, sizeof(uint16_t)) != 0)){
-			//LOG(DEBUG, "Ports didnt match");
+			//LOG(DEBUG, debugInfo + "Ports didnt match");
 			return;
 		}
 
@@ -157,15 +157,15 @@ void SYNscan::filterCallback(const u_char *packet){
 		// check flags in tcp packet
 		if((tcp_hdr->syn) && (tcp_hdr->ack)){
 			status = OPEN;
- 			LOG(DEBUG, debugInfo + " SYN & ACK flag set, Port is OPEN");
+ 			LOG(DEBUG, debugInfo + "SYN & ACK flag set, Port is OPEN");
 		}
 		else if((tcp_hdr->syn)){
 			status = OPEN;
-			LOG(DEBUG, debugInfo + " SYN flag set, Port is OPEN");
+			LOG(DEBUG, debugInfo + "SYN flag set, Port is OPEN");
 		}
 		else if((tcp_hdr->rst)){
 			status = CLOSED;
-			LOG(DEBUG, debugInfo + " RST flag set, Port is closed");
+			LOG(DEBUG, debugInfo + "RST flag set, Port is closed");
 		}
 		break;
 		
@@ -189,8 +189,8 @@ void SYNscan::filterCallback(const u_char *packet){
 				icmp_ip_hdr = &icmp_hdr->icmp_ip;
 				source = icmp_ip_hdr->ip_src.s_addr;
 				dest =   icmp_ip_hdr->ip_dst.s_addr;
-				//LOG(DEBUG, "Source :" + string(inet_ntoa(icmp_ip_hdr->ip_src)));
-				//LOG(DEBUG,"Destination : " + string(inet_ntoa(icmp_ip_hdr->ip_dst)));
+				//LOG(DEBUG, "Source :"+ string(inet_ntoa(icmp_ip_hdr->ip_src)));
+				//LOG(DEBUG,"Destination : "+ string(inet_ntoa(icmp_ip_hdr->ip_dst)));
 				if((memcmp(&source, &src.sin_addr.s_addr, sizeof(uint32_t)) != 0 ) || 
 				   (memcmp(&dest, &dst.sin_addr.s_addr, sizeof(uint32_t)) != 0)){
 					return;
@@ -204,8 +204,8 @@ void SYNscan::filterCallback(const u_char *packet){
 				tcp_hdr = (struct tcphdr *)((u_char*)icmp_ip_hdr+runner);
 				s_port = ntohs(tcp_hdr->source);
 				d_port = ntohs(tcp_hdr->dest);
-				//LOG(DEBUG, "Source port :" + to_string((int)s_port));
-				//LOG(DEBUG, "dest port :" + to_string((int)d_port));
+				//LOG(DEBUG, "Source port :"+ to_string((int)s_port));
+				//LOG(DEBUG, "dest port :"+ to_string((int)d_port));
 				if((memcmp(&d_port, &dst.sin_port, sizeof(uint16_t)) != 0) || 
 				   (memcmp(&s_port, &src.sin_port, sizeof(uint16_t)) != 0)){
 					return;
@@ -213,7 +213,7 @@ void SYNscan::filterCallback(const u_char *packet){
 				// set status 
 				numOfPacketReceived++;
 				status = FILTERED;
-				LOG(DEBUG, debugInfo + " UNREACHABLE HOST, Port is FILTERED");
+				LOG(DEBUG, debugInfo + "UNREACHABLE HOST, Port is FILTERED");
 				break;
 
 			default:
