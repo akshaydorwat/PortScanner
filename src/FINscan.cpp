@@ -45,7 +45,7 @@ void FINscan::createPacket(){
 	factory->setOption("check", &temp);
 }
 
-void FINscan::init(){
+bool FINscan::init(){
 	int zero = 0;
 	const int *val = &zero;
 
@@ -56,31 +56,36 @@ void FINscan::init(){
 	sfd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
 	if(sfd < 0 ){
 		LOG(ERROR,"Failed to create RAW socket");
-		exit(0);
+		return false;
 	}else{
 		//LOG(DEBUG,"Socket Initialized");
 	}
 	// set IPHDRINCL fasle                                                                                        
 	if(setsockopt(sfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(zero)) < 0){
 		LOG(ERROR, "Unable to set socket option IPHDEINCL to Flase");
-		exit(-1);
+		return false;
 	}else{
 		//LOG(DEBUG, "IPHDRINCL set to False");
 	}
+	return true;
 }
 
-void FINscan::send(){
+bool FINscan::send(){
 	if(sendto(sfd, buff, sizeof(struct tcphdr), 0, (struct sockaddr *)&dst, sizeof(dst)) < 0){
 		LOG(ERROR, "Sending failed");
+		return false;
 	}else{
 		LOG(DEBUG, debugInfo + " PACKET sent successfully");
 		numOfPacketSent++;
 	}
+	return true;
 }
 
 void FINscan::handle(){
 		// Initialise the packet and socket
-	init();
+	if(!init()){
+		exit(0);
+	}
 	
 	// register callback with filter
 	PacketScanner *scanner =  PacketScanner::getPacketScanner();	

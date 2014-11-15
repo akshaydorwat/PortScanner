@@ -18,6 +18,7 @@
 #include "XMASscan.hpp"
 #include "UDPscan.hpp"
 #include "FINscan.hpp"
+#include "WHOISvScan.hpp"
 
 using namespace std;
 
@@ -199,20 +200,39 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
-	
-	in.sin_family = AF_INET;
 
+	Scan *s;
+	in.sin_family = AF_INET;
+	
 	for(vector<sockaddr_in>::iterator i = data.ips.begin(); i != data.ips.end(); ++i){
 		struct sockaddr_in addr = *i;
-
 		for(vector<unsigned short>::iterator j = data.ports.begin(); j != data.ports.end(); ++j){
 			unsigned short port = *j;
 			addr.sin_port = port;
-
-			for(vector<string>::iterator k = data.scanTechniques.begin(); k != data.scanTechniques.end(); ++k){
-				string type = *k;
-				Scan *s;
+			string str = "";
+			switch(port){
 				
+			case SSH :
+				break;
+			case SMTP :
+				break;
+			case HTTP :
+				break;
+			case WHOIS : 
+				s = new WHOISvScan(in, addr, str);
+				pool.queueJob(s);
+				break;
+			case POP :
+				//s = new POPvScan(in, addr, "");
+				break;
+			case IMAP :
+				//s = new IMAPvScan(in, addr, "");
+				break;
+			}
+			
+			for(vector<string>::iterator k = data.scanTechniques.begin(); k != data.scanTechniques.end(); ++k){
+
+				string type = *k;
 				if(type.compare("SYN") == 0){
 					s = new SYNscan(in, addr, type);
 					

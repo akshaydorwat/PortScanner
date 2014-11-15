@@ -25,8 +25,8 @@ public:
 
 private:
 
-    void init();
-    void send();
+    bool init();
+    bool send();
     void createPacket();
 };
 #endif

@@ -5,29 +5,29 @@
  * Tab Width : 4 
  **/
 
-#ifndef UDP_SCAN_HPP
-#define UDP_SCAN_HPP
+#ifndef SYN_SCAN_HPP
+#define SYN_SCAN_HPP
 
 #include "Scan.hpp"
-#include "unistd.h"
 
 using namespace std;
 
-class UDPscan: public Scan{
-  
+class SYNscan : public Scan {
+	
 public:
-	UDPscan( struct sockaddr_in &p_src, struct sockaddr_in &p_dst, string &type ) 
+	SYNscan( struct sockaddr_in &p_src, struct sockaddr_in &p_dst, string &type ) 
 		: Scan(p_src, p_dst, type){
-		factory = new PacketFactory(DNS, buff);
+		factory = new PacketFactory(TCP, buff);
 	};
-
+	
 	void handle();
 	void filterCallback(const u_char *ptr);
 
 private:
 
-    bool init();
-    bool send();
-    void createPacket();
+    void init();
+    void send();
+	void createPacket();
 };
+
 #endif
