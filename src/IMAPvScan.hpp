@@ -5,19 +5,19 @@
  * Tab Width : 4 
  **/
 
-#ifndef SYN_SCAN_HPP
-#define SYN_SCAN_HPP
+#ifndef IMAP_V_HPP
+#define IMAP_V_HPP
 
 #include "Scan.hpp"
+#include <sys/time.h>
 
 using namespace std;
 
-class SYNscan : public Scan {
+class IMAPvScan : public Scan {
 	
 public:
-	SYNscan( struct sockaddr_in &p_src, struct sockaddr_in &p_dst, string &type ) 
+	IMAPvScan( struct sockaddr_in &p_src, struct sockaddr_in &p_dst, string &type ) 
 		: Scan(p_src, p_dst, type){
-		factory = new PacketFactory(TCP, buff);
 	};
 	
 	void handle();
@@ -25,9 +25,10 @@ public:
 
 private:
 
-    void init();
-    void send();
+    bool init();
+    bool send();
 	void createPacket();
+	string getVersion(const char * buff, int &size);
 };
 
 #endif

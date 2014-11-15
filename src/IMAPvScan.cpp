@@ -5,16 +5,16 @@
  * Tab Width : 4 
  **/
 
-#include "WHOISvScan.hpp"
+#include "IMAPvScan.hpp"
 
-void WHOISvScan::createPacket(){
-	const char *query ="google.com\r\n\0";
+void IMAPvScan::createPacket(){
+	const char *query ="abcd CAPABILITYn\0";
 	memcpy(buff, query,strlen(query));
 	packetLen = strlen(buff);
 }
 
 
-bool WHOISvScan::init(){
+bool IMAPvScan::init(){
 	int ret;
 	struct timeval time_out;
 	
@@ -60,8 +60,9 @@ bool WHOISvScan::init(){
 	return true;
 }
 
-bool WHOISvScan::send(){
+bool IMAPvScan::send(){
 	int ret;
+	std::cout << "Calling send" << std::endl;
 	if((ret = sendto(sfd, buff, packetLen, MSG_DONTWAIT, NULL, 0)) == -1){
 		LOG(ERROR, debugInfo + " failed to write data");
 		return false;
@@ -72,40 +73,42 @@ bool WHOISvScan::send(){
 	return true;
 }
 
-void WHOISvScan::handle(){
+void IMAPvScan::handle(){
 
 	int ret;
 	char buff[BUFFER_SIZE];
 
 	// Initialise the packet and socket
 	if(!init()){
-		LOG(ERROR, debugInfo + " WHOIS init error");
+		LOG(ERROR, debugInfo + " IMAP init error");
 		return;
 	}
 	
 	// send packet and wait for the response
-	for(int i=0 ; i < 1; i++){
+	for(int i=0 ; i < MAX_TRY; i++){
 		if(send()){
 			if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
 				string version = getVersion(buff, ret);
-				LOG(DEBUG, debugInfo + "WHOIS : " + version);
-				StatsReporter *stsRptr = StatsReporter::getStatsReporter();	
-				stsRptr->updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
-				break;
+				cout << "================>VERSION (" << version.size() << ")" << version ;
+				if(version.size() > 0 ){
+					LOG(DEBUG, debugInfo + "ICMP : " + version);
+					StatsReporter *stsRptr = StatsReporter::getStatsReporter();	
+					stsRptr->updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
+					break;
+				}
 			}
 		}
 	}
 }
 
-string WHOISvScan::getVersion(const char* buff, int &ret){
+string IMAPvScan::getVersion(const char* buff, int &ret){
 	size_t start;
 	size_t end;
 	string s = string(buff, ret);
-
-	const string temp = "Whois Server Version "; 
+	string temp = "IMAP";
+	cout << debugInfo <<"=================>Output : " << s <<endl; 
 	if((start = s.find(temp)) != string::npos){
-		if((end = s.find("\n", temp.length()+1)) != string::npos){
-			start += temp.length();
+		if((end = s.find(" ", start)) != string::npos){
 			return s.substr(start, end - start);
 		}else{
 			return "";
@@ -115,7 +118,7 @@ string WHOISvScan::getVersion(const char* buff, int &ret){
 	}
 }
 
-void WHOISvScan::filterCallback(const u_char *packet){
+void IMAPvScan::filterCallback(const u_char *packet){
 	LOG(WARNING, debugInfo + " This method is not implemented");
 }
 

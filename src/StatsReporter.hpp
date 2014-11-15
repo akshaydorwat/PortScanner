@@ -27,12 +27,18 @@
 
 using namespace std;
 
+#define PORT_COL 7
+#define SVC_COL 50
+#define RSLT_COL 25
+#define CON_COL 15
+
 class StatsReporter
 {
 	private:
 		static StatsReporter *stsRptr;						// singleton instance of StatsReporter
 
 		size_t startTime;
+		size_t endTime;
 		Mutex ipPortMtx;
 		vector<string> ipPortMtxVctr;
 		map<string, map<string, vector<PortStatus>>> report;
@@ -57,6 +63,8 @@ class StatsReporter
 			return stsRptr;
 		}
 
+		void restartStopwatch()	{ startTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count(); }
+		void stopStopwatch() { endTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count(); }
 		void displayReport();
 		void updatePortStatus(struct in_addr ipAddr, uint16_t port, enum SCAN_TECHNIQUE scanType, enum PORT_STATUS portSts);
 		void updateServiceStatus(struct in_addr ipAddr, uint16_t port, string svc, string version);

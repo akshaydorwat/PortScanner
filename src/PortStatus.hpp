@@ -18,9 +18,9 @@ using namespace std;
 enum PORT_STATUS
 {
 	OPEN,
-	OPEN_FILTERED,
-	UNFILTERED,
 	FILTERED,
+	OPEN_FILTERED,
+	UNFILTERED,	
 	CLOSED
 };
 

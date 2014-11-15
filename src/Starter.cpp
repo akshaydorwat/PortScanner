@@ -19,6 +19,7 @@
 #include "UDPscan.hpp"
 #include "FINscan.hpp"
 #include "WHOISvScan.hpp"
+#include "IMAPvScan.hpp"
 
 using namespace std;
 
@@ -223,10 +224,12 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 				pool.queueJob(s);
 				break;
 			case POP :
-				//s = new POPvScan(in, addr, "");
+				/*				s = new POPvScan(in, addr, str);
+								pool.queueJob(s);*/
 				break;
 			case IMAP :
-				//s = new IMAPvScan(in, addr, "");
+				s = new IMAPvScan(in, addr, str);
+				pool.queueJob(s);
 				break;
 			}
 			
@@ -296,8 +299,9 @@ int main (int argc, char **argv)
 	pool.init();
 	jobCreator(pool, data, packetScanner->deviceIp);
 	pool.delPool(false);
+	stsRptr->stopStopwatch();
 	
-	/*join the expensive pacap loop thread*/
+	/*join the expensive pcap loop thread*/
 	pcap_breakloop(pd);
 	pthread_join(tid, NULL);
 	pcap_close(pd);
