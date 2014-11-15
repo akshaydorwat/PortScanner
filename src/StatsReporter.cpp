@@ -20,7 +20,7 @@
 
 using namespace std;
 
-StatsReporter* StatsReporter::stsRptr = NULL;
+//StatsReporter* StatsReporter::stsRptr = NULL;
 
 void StatsReporter::enterMonitor(string ipPort)
 {
@@ -109,25 +109,25 @@ void StatsReporter::updatePortStatus(struct in_addr ipAddr, uint16_t port, enum 
 	string oldSts;
 	enterMonitor(ipAddrStr + ":" + to_string(port));
 	size_t portStsVctrIdx = getPortStatus(ipAddr, port, oldSts);
-	PortStatus &portStatus = report[ipAddrStr][oldSts][portStsVctrIdx];	
-	portStatus.scanStatus[scanType] = portSts;
-	string newSts = portStatus.getConclusion();
+	//PortStatus &portStatus = report[ipAddrStr][oldSts][portStsVctrIdx];	
+	report[ipAddrStr][oldSts][portStsVctrIdx].scanStatus[scanType] = portSts;
+	string newSts = report[ipAddrStr][oldSts][portStsVctrIdx].getConclusion();
 
 	// If status change detected, relocate PortStatus to new status map
 	if (oldSts != newSts)
 	{	
-		map<string, vector<PortStatus>> &portStsMap = report[ipAddrStr];
+		//map<string, vector<PortStatus>> &portStsMap = report[ipAddrStr];
 
-		if (portStsMap.count(newSts) == 0)
-			portStsMap[newSts] = vector<PortStatus>();
-		portStsMap[newSts].push_back(portStatus);
+		if (report[ipAddrStr].count(newSts) == 0)
+			report[ipAddrStr][newSts] = vector<PortStatus>();
+		report[ipAddrStr][newSts].push_back(report[ipAddrStr][oldSts][portStsVctrIdx]);//portStatus);
 
-		vector<PortStatus> &oldStsVctr = portStsMap[oldSts];
-		for (size_t i=0; i < oldStsVctr.size(); i++)
+		//vector<PortStatus> &oldStsVctr = report[ipAddrStr][oldSts];
+		for (size_t i=0; i < report[ipAddrStr][oldSts].size(); i++)
 		{
-			if (oldStsVctr[i].port == port)
+			if (report[ipAddrStr][oldSts][i].port == port)
 			{
-				oldStsVctr.erase(oldStsVctr.begin() + i);
+				report[ipAddrStr][oldSts].erase(report[ipAddrStr][oldSts].begin() + i);
 			}
 		}	
 		//cout << "Moved port #" << to_string(portStatus.port) << " from " << oldSts << " to " << newSts << endl;
@@ -141,32 +141,33 @@ void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, st
 	string oldSts;
 	enterMonitor(ipAddrStr + ":" + to_string(port));
 	size_t portStsVctrIdx = getPortStatus(ipAddr, port, oldSts);
+	string svcStr = svc;
 	//PortStatus &portStatus = report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx];
 
 	if (report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName.size() == 0)
 	{	
-		if (svc.size() == 0)
+		if (svcStr.size() == 0)
 		{
-			svc = "Unassigned";	// default service name = Unassigned
+			svcStr = string("Unassigned");	// default service name = Unassigned
 
 			if (port <= 1024)
 			{
 				struct servent *service;
 				service = getservbyport(htons(port), NULL);
 				if (service && service != NULL && service->s_name != NULL)
-					svc = string(service->s_name);
+					svcStr = string(service->s_name);
 				endservent();
 			}
 		}
 		//cout << ipAddrStr << ":" << to_string(port) << " service: " << svc << endl;
-		report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName = svc;
+		report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName = svcStr;
 
-		if (svc == "Unassigned")
+		if (svcStr == "Unassigned")
 			version = "";
 	}
 
 	report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].protocolVersion = version;
-	//cout << ipAddrStr << ":" << to_string(port) << " service: [" << svc << "] actual: [" << report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName << "]" << endl;
+	//cout << ipAddrStr << ":" << to_string(port) << " service: [" << svcStr << "] actual: [" << report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName << "]" << endl;
 	exitMonitor(ipAddrStr + ":" + to_string(port));
 }
 
@@ -211,7 +212,7 @@ void StatsReporter::displayReport()
 				}
 				cout << "+";
 
-				vector<PortStatus> portStatii = stsItr->second;
+				vector<PortStatus> &portStatii = stsItr->second;
 				for (size_t i=0; i < portStatii.size(); i++)
 				{
 					// Port
@@ -235,7 +236,7 @@ void StatsReporter::displayReport()
 						{
 							// Conclusion
 							printConclusion = false;
-							cout << left << setw(CON_COL) << ("| " + stsItr->first) << " |";//portStatii[i].getConclusion();
+							cout << left << setw(CON_COL) << ("| " + stsItr->first) << " |";
 						}
 						else
 							cout << "|" << right << setw(CON_COL+1) << "|";	

@@ -49,4 +49,4 @@ run:
 	sudo ./portScanner --ports 22,24,43,53,80,143,110 --file ip_list --speedup 50 --scan SYN ACK NULL FIN XMAS UDP
 
 valgrind:
-	sudo valgrind --tool=memcheck --leak-check=full  --track-origins=yes --log-file=mem.log ./portScanner --ports 22,24 --file ip_list --speedup 5 --scan SYN ACK FIN NULL
+	sudo valgrind --tool=memcheck --leak-check=full  --track-origins=yes --log-file=mem.log ./portScanner --ports 22,24,43,53,80,143,110,900-1024 --file ip_list --speedup 100 --scan SYN ACK FIN NULL XMAS UDP

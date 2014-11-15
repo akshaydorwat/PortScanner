@@ -90,8 +90,8 @@ void UDPscan::handle(){
 	init();
 	
 	// register callback with filter
-	PacketScanner *scanner =  PacketScanner::getPacketScanner();	
-	scanner->registerCallback(sfd, bind(&Scan::filterCallback, this, std::placeholders::_1));
+	PacketScanner &scanner =  PacketScanner::getPacketScanner();	
+	scanner.registerCallback(sfd, bind(&Scan::filterCallback, this, std::placeholders::_1));
 	
 	// send packet
 	send();
@@ -106,7 +106,7 @@ void UDPscan::handle(){
 	}
 
 	// unregister callback wih filter
-	scanner->unregisterCallback(sfd);
+	scanner.unregisterCallback(sfd);
 
 	// update status if no packet recieved
 	if(numOfPacketReceived == 0){

@@ -20,14 +20,14 @@
 
 using namespace std;
 
-PacketScanner* PacketScanner::packetScanner = NULL;
+//PacketScanner* PacketScanner::packetScanner = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-PacketScanner* PacketScanner::getPacketScanner()
+PacketScanner& PacketScanner::getPacketScanner()
 {
-	if (!packetScanner)
-		packetScanner = new PacketScanner();
-
+	//if (!packetScanner)
+	//	packetScanner = new PacketScanner();
+	static PacketScanner packetScanner;
 	return packetScanner;
 }
 
@@ -106,7 +106,7 @@ pcap_t* PacketScanner::init()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void* PacketScanner::scanForever( void *p_pd)
 {
-	PacketScanner *pktScnr = PacketScanner::getPacketScanner();
+	PacketScanner &pktScnr = PacketScanner::getPacketScanner();
 	pcap_t *pd = (pcap_t*) p_pd;
 	int linktype;
 
@@ -126,7 +126,7 @@ void* PacketScanner::scanForever( void *p_pd)
 		  break;*/
 
 		case DLT_EN10MB:	// ethernet
-			pktScnr->linkHeaderLength = 14;
+			pktScnr.linkHeaderLength = 14;
 			LOG(DEBUG, "PacketScanner : Link type : ETHERNET");
 			break;
 
@@ -136,7 +136,7 @@ void* PacketScanner::scanForever( void *p_pd)
 	}
 
 	// Start capturing packets.
-	if (pcap_loop(pd, 0, (pcap_handler) makeCallbacks, (u_char*) pktScnr) < 0)
+	if (pcap_loop(pd, 0, (pcap_handler) makeCallbacks, (u_char*) &pktScnr) < 0)
 		LOG(ERROR, "PacketScanner : Error occurred while looping forever. " + string(pcap_geterr(pd)));
 
 	return NULL;

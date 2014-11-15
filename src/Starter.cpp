@@ -260,11 +260,11 @@ int main (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	/* create stat reporter*/
-	StatsReporter *stsRptr = StatsReporter::getStatsReporter();
+	StatsReporter &stsRptr = StatsReporter::getStatsReporter();
 
 	/*Packet scanner*/
-	PacketScanner* packetScanner = PacketScanner::getPacketScanner();
-	pcap_t* pd = packetScanner->init();
+	PacketScanner &packetScanner = PacketScanner::getPacketScanner();
+	pcap_t* pd = packetScanner.init();
 	if (pd == NULL){ 
 		exit(EXIT_FAILURE);
 	}
@@ -274,9 +274,9 @@ int main (int argc, char **argv)
 	/*create Job pool */
 	JobPool pool(data.numOfThreads);
 	pool.init();
-	jobCreator(pool, data, packetScanner->deviceIp);
+	jobCreator(pool, data, packetScanner.deviceIp);
 	pool.delPool(false);
-	stsRptr->stopStopwatch();
+	stsRptr.stopStopwatch();
 	
 	/*join the expensive pcap loop thread*/
 	pcap_breakloop(pd);
@@ -284,12 +284,12 @@ int main (int argc, char **argv)
 	pcap_close(pd);
 
 	/*Display status*/
-	stsRptr->displayReport();
+	stsRptr.displayReport();
 
 	/*free memory*/
 	delete Logger::getInstance();
 	delete UniquePortGenerator::getInstance();
-	delete PacketScanner::getPacketScanner();
-	delete StatsReporter::getStatsReporter();
+	//delete PacketScanner::getPacketScanner();
+	//delete StatsReporter::getStatsReporter();
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -45,9 +45,9 @@ const u_char* Scan::basicFilter(const u_char *packet, uint8_t &protocol){
 }
  
 void Scan::reportStats(){
-	StatsReporter *stsRptr = StatsReporter::getStatsReporter();	
-	stsRptr->updatePortStatus(dst.sin_addr, dst.sin_port, scanType, status);	
-	stsRptr->updateServiceStatus(dst.sin_addr, dst.sin_port, "", "");
+	StatsReporter &stsRptr = StatsReporter::getStatsReporter();	
+	stsRptr.updatePortStatus(dst.sin_addr, dst.sin_port, scanType, status);	
+	stsRptr.updateServiceStatus(dst.sin_addr, dst.sin_port, "", "");
 	string s = PortStatus::getStatusString(status);
-	LOG(DEBUG, "======== > > " + debugInfo + " "   + s);
+	LOG(DEBUG, "Scan : Update " + debugInfo + " "   + s);
 }
