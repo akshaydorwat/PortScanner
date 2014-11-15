@@ -50,12 +50,15 @@ public:
 		// initialise the stats
 		numOfPacketSent = 0;
 		numOfPacketReceived = 0;
+		factory = NULL;
 		//debugging
 		debugInfo = string(inet_ntoa(dst.sin_addr)) + ":" +	to_string((int)dst.sin_port) + "\t"	+ KNOWN_SCANS[scanType];
 	};
 	
 	virtual ~Scan(){
-		delete factory;
+		if(factory != NULL){
+			delete factory;
+		}
 		UniquePortGenerator::getInstance()->freeUsedPort(src.sin_port);
 		close(sfd);
 	};
@@ -81,7 +84,7 @@ protected:
 	int sfd;
 	string debugInfo;
 	int packetLen;
-
+	
 	// basic filter
 	const u_char* basicFilter(const u_char *packet, uint8_t &protocol);
 	
@@ -91,14 +94,14 @@ protected:
 private:
 
 	// Initial setup 
-	virtual void init() = 0;
+	virtual bool init() = 0;
 
 	// Send packet 
-	virtual void send() = 0;
+	virtual bool send() = 0;
 
 	// create packet 
 	virtual void createPacket() = 0;
-	
+
 };
 
 #endif

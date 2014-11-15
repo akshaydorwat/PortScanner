@@ -162,12 +162,14 @@ void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, st
 		//cout << ipAddrStr << ":" << to_string(port) << " service: " << svc << endl;
 		report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName = svcStr;
 
-		if (svcStr == "Unassigned")
-			version = "";
+		//if (svc == "Unassigned")
+		//version = "";
 	}
 
-	report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].protocolVersion = version;
-	//cout << ipAddrStr << ":" << to_string(port) << " service: [" << svcStr << "] actual: [" << report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName << "]" << endl;
+	if (version.size() != 0)
+		report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].protocolVersion = version;
+	//cout << ipAddrStr << ":" << to_string(port) << " service: [" << svc << "] actual: [" << report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].serviceName << "]" << endl;
+	//cout << ipAddrStr << ":" << to_string(port) << " version: [" << version << "] actual: [" << report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx].protocolVersion << "]" << endl;
 	exitMonitor(ipAddrStr + ":" + to_string(port));
 }
 

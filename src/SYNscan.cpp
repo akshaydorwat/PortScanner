@@ -45,7 +45,7 @@ void SYNscan::createPacket(){
 	factory->setOption("check", &temp);
 }
 
-void SYNscan::init(){
+bool SYNscan::init(){
 	
 	int zero = 0;
 	const int *val = &zero;
@@ -56,34 +56,37 @@ void SYNscan::init(){
 	// create raw socket
 	sfd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
 	if(sfd < 0 ){
-		LOG(ERROR,"Failed to create RAW socket");
-		exit(0);
+		LOG(ERROR, debugInfo + "Failed to create RAW socket");
+		return false;
 	}else{
 		//LOG(DEBUG,"Socket Initialized");
 	}
 	// set IPHDRINCL fasle                                                                                       
 	if(setsockopt(sfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(zero)) < 0){
-		LOG(ERROR, "Unable to set socket option IPHDEINCL to Flase");
-		exit(-1);
+		LOG(ERROR, debugInfo +  "Unable to set socket option IPHDEINCL to Flase");
+		return false;
 	}else{
 		//LOG(DEBUG, "IPHDRINCL set to False");
 	}
+	return true;
 }
 
-void SYNscan::send(){
+bool SYNscan::send(){
 	if(sendto(sfd, buff, sizeof(struct tcphdr), 0, (struct sockaddr *)&dst, sizeof(dst)) < 0){
-		LOG(ERROR, "Sending failed");
+		return false;
 	}else{
-		
 		LOG(DEBUG, debugInfo + " packet sent successfully");
 		numOfPacketSent++;
 	}
+	return true;
 }
 
 void SYNscan::handle(){
 
 	// Initialise the packet and socket
-	init();
+	if(!init()){
+	  exit(0);
+	}
 	
 	// register callback with filter
 	PacketScanner &scanner =  PacketScanner::getPacketScanner();	
@@ -94,7 +97,6 @@ void SYNscan::handle(){
 	
 	// Poll on the recieved packet, if failed try resending it
 	for(int i=0 ; i < MAX_TRY; i++){
-	 
 		sleep(1);
 		if(numOfPacketReceived){
 			break;

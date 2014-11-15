@@ -25,8 +25,8 @@ public:
 	void filterCallback(const u_char *ptr);
 
 private:
-    void init();
-    void send();
+    bool init();
+    bool send();
 	void createPacket();
 
 };
