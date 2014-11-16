@@ -5,16 +5,16 @@
  * Tab Width : 4 
  **/
 
-#include "WHOISvScan.hpp"
+#include "HTTPvScan.hpp"
 
-void WHOISvScan::createPacket(){
-	const char *query ="google.com\r\n\0";
+void HTTPvScan::createPacket(){
+	const char *query ="GET / HTTP/1.1\r\nHost: dagwood.soic.indiana.edu\r\n\0";
 	memcpy(buff, query,strlen(query));
 	packetLen = strlen(buff);
 }
 
 
-bool WHOISvScan::init(){
+bool HTTPvScan::init(){
 	int ret;
 	struct timeval time_out;
 	
@@ -60,7 +60,7 @@ bool WHOISvScan::init(){
 	return true;
 }
 
-bool WHOISvScan::send(){
+bool HTTPvScan::send(){
 	int ret;
 	if((ret = sendto(sfd, buff, packetLen, MSG_DONTWAIT, NULL, 0)) == -1){
 		LOG(WARNING, debugInfo + "failed to write data");
@@ -72,14 +72,14 @@ bool WHOISvScan::send(){
 	return true;
 }
 
-void WHOISvScan::handle(){
+void HTTPvScan::handle(){
 
 	int ret;
 	char buff[BUFFER_SIZE];
 
 	// Initialise the packet and socket
 	if(!init()){
-		LOG(WARNING, debugInfo + "WHOIS init error");
+		LOG(WARNING, debugInfo + "HTTP init error");
 		return;
 	}
 	
@@ -88,7 +88,7 @@ void WHOISvScan::handle(){
 		if(send()){
 			if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
 				string version = getVersion(buff, ret);
-				LOG(DEBUG, debugInfo + "WHOIS : " + version);
+				LOG(DEBUG, debugInfo + "HTTP : " + version);
 				StatsReporter &stsRptr = StatsReporter::getStatsReporter();	
 				stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
 				break;
@@ -97,14 +97,14 @@ void WHOISvScan::handle(){
 	}
 }
 
-string WHOISvScan::getVersion(const char* buff, int &ret){
+string HTTPvScan::getVersion(const char* buff, int &ret){
 	size_t start;
 	size_t end;
 	string s = string(buff, ret);
 
-	const string temp = "Whois Server Version "; 
+	const string temp = "HTTP/"; 
 	if((start = s.find(temp)) != string::npos){
-		if((end = s.find("\n", temp.length()+1)) != string::npos){
+		if((end = s.find(" ", temp.length()+1)) != string::npos){
 			start += temp.length();
 			return s.substr(start, end - start);
 		}else{
@@ -115,7 +115,7 @@ string WHOISvScan::getVersion(const char* buff, int &ret){
 	}
 }
 
-void WHOISvScan::filterCallback(const u_char *packet){
+void HTTPvScan::filterCallback(const u_char *packet){
 	LOG(WARNING, debugInfo + "This method is not implemented");
 }
 

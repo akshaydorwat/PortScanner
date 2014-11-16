@@ -24,8 +24,9 @@ XMASscan.o\
 UDPscan.o\
 UniquePortGenerator.o\
 WHOISvScan.o\
-IMAPvScan.o
-
+IMAPvScan.o\
+SSHvScan.o\
+HTTPvScan.o
 
 
 BIN = portScanner
@@ -47,8 +48,11 @@ clean:
 tar:
 	tar -cvf portScanner.tar Makefile README src
 
+test:
+	sudo ./portScanner -v --ports 80 --ip 129.79.247.87 --speedup 50 --scan SYN 
+
 run:
-	sudo ./portScanner --log_file LOG.log --ports 22,24,80,110,143,43,53 --ip 129.79.247.87 --speedup 50 --scan SYN UDP FIN NULL XMAS ACK
+	sudo ./portScanner --log_file LOG.log --ports 22,24,43,80,110,143 --ip 129.79.247.87 --speedup 50 --scan SYN UDP FIN NULL XMAS ACK
 
 service:
 	sudo ./portScanner --ports 43 --file service_ip --speedup 50 --scan SYN
