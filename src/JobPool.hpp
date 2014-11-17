@@ -25,6 +25,8 @@ enum POOL_STATE{
 
 class JobPool{
 public:
+	size_t jobPoolSize;
+
 	JobPool(int size);
 	~JobPool();
 	
@@ -34,6 +36,7 @@ public:
 	void joinAll();
 	
 private:
+	double lastPercentCompleted;
 	enum POOL_STATE state;
 	int numOfThreads;
 	vector<pthread_t> threads;

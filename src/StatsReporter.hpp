@@ -19,7 +19,6 @@
 #include <inttypes.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-//#include <time.h>
 
 #include "PortStatus.hpp"
 #include "Starter.hpp"
@@ -35,17 +34,31 @@ using namespace std;
 class StatsReporter
 {
 	private:
-		//static StatsReporter *stsRptr;						// singleton instance of StatsReporter
-
 		size_t startTime;
 		size_t endTime;
 		Mutex ipPortMtx;
 		vector<string> ipPortMtxVctr;
-		map<string, map<string, vector<PortStatus>>> report;
+		map<string, map<string, vector<PortStatus*>>> report;
 
 		StatsReporter(){};							// private constructor
+		~StatsReporter()							// private destructor
+		{
+			StatsReporter &stsRptr = getStatsReporter();
+		 	for (map<string, map<string, vector<PortStatus*>>>::iterator ipItr = stsRptr.report.begin(); \
+				ipItr != stsRptr.report.end(); ++ipItr)
+			{
+				for (map<string, vector<PortStatus*>>::iterator stsItr = ipItr->second.begin(); \
+					stsItr != ipItr->second.end(); ++stsItr)
+				{
+					for (size_t portIdx=0; portIdx < stsItr->second.size(); ++portIdx)
+					{
+						delete stsItr->second[portIdx];
+					}
+				}
+			}
+		}
 		StatsReporter(StatsReporter const&){};                			// private copy constructor
-		StatsReporter& operator=(StatsReporter const&);//{ return *stsRptr; };	// private assignment operator
+		StatsReporter& operator=(StatsReporter const&);				// private assignment operator
 
 		void enterMonitor(string ipPort);
 		void exitMonitor(string ipPort);
@@ -55,11 +68,7 @@ class StatsReporter
 		static StatsReporter& getStatsReporter()       // obtain the singleton instance
 		{
 			static StatsReporter stsRptr;
-			//if (!stsRptr)
-			//{
-				//stsRptr = new StatsReporter();
-				stsRptr.startTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
-			//}
+			stsRptr.startTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
 
 			return stsRptr;
 		}

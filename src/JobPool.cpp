@@ -12,6 +12,8 @@ JobPool::JobPool(int size){
 	numOfThreads = size;
 	state = STOPPED;
 	done = false;
+	jobPoolSize = 0;
+	lastPercentCompleted = 0.0;
 }
 
 JobPool::~JobPool(){
@@ -131,6 +133,15 @@ void JobPool::run(){
 		// retrieve job from the pool
 		s = pool.front();
 		pool.pop_front();
+		size_t remainingPoolSize = pool.size();
+		double percentCompleted = 100.0 * (jobPoolSize - remainingPoolSize) / (jobPoolSize);
+		if (percentCompleted - lastPercentCompleted >= 1.0)
+		{
+			lastPercentCompleted += 1.0;
+			cout << "#";
+		}
+		/*if (lastPercentCompleted - 100.0 < 0.1)
+			cout << endl;*/
 		mutex.unlock();
 	
 		// call actual function

@@ -54,7 +54,7 @@ service:
 	sudo ./portScanner --ports 43 --file service_ip --speedup 50 --scan SYN
 
 stress_test:
-	sudo ./portScanner --log_file LOG.log --ports 22,24,80,110,143,43,53,700-1024 --file ip_list --speedup 100 --scan SYN UDP FIN NULL XMAS ACK
+	sudo ./portScanner --log_file LOG.log --ports 22,24,80,110,143,43,53,700-1024 --file ip_list --speedup 75 --scan SYN UDP FIN NULL XMAS ACK
 
 valgrind:
-	sudo valgrind --tool=memcheck --leak-check=full  --track-origins=yes --log-file=mem.log ./portScanner --ports 22,24,43,53,80,143,110,900-1024 --file ip_list --speedup 100 --scan SYN ACK FIN NULL XMAS UDP
+	sudo valgrind --tool=memcheck --leak-check=full  --track-origins=yes --log-file=mem.log ./portScanner --log_file LOG.log --ports 1-512 --file ip_list --speedup 100 --scan SYN ACK FIN NULL XMAS UDP

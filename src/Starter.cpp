@@ -92,65 +92,65 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 	// accepting nothing but long options by specifying optstring = ""
 	while ((opt = getopt_long(argc, argv, "v", long_options, &optIdx)) != -1){ 
 		switch (opt){
-		case 'h': // help
-			numOpts++;
-			show_help();
-			break;
-
-		case 'p': // ports
-			numOpts++;
-			ports = extractPorts(optarg);	
-			break;
-
-		case 'i': // ip
-			numOpts++;
-			if (PortScannerUtils::isValidIp(optarg))
-				ips.push_back(optarg);
-			break;
-
-		case 'r': // prefix
-			numOpts++;
-			ipsFromPrefix = PortScannerUtils::getIpsFromPrefix(optarg);
-			for (size_t i=0; i < ipsFromPrefix.size(); i++)
-				ips.push_back(ipsFromPrefix[i]);
-			ipsFromPrefix.clear();
-			break;
-
-		case 'f': // file
-			numOpts++;
-			file.open(optarg);
-			if (!file.is_open()){
-				LOG(ERROR, "portScanner : Failed to open file " + string(optarg) );
+			case 'h': // help
+				numOpts++;
+				show_help();
 				break;
-			}
-			while(file >> temp){
-				ipsFromPrefix = PortScannerUtils::getIpsFromPrefix(temp);
+
+			case 'p': // ports
+				numOpts++;
+				ports = extractPorts(optarg);	
+				break;
+
+			case 'i': // ip
+				numOpts++;
+				if (PortScannerUtils::isValidIp(optarg))
+					ips.push_back(optarg);
+				break;
+
+			case 'r': // prefix
+				numOpts++;
+				ipsFromPrefix = PortScannerUtils::getIpsFromPrefix(optarg);
 				for (size_t i=0; i < ipsFromPrefix.size(); i++)
 					ips.push_back(ipsFromPrefix[i]);
 				ipsFromPrefix.clear();
-			}
-			file.close();
-			break;
+				break;
 
-		case 's': // speedup
-			numOpts++;
-			numOfThreads = atoi(optarg);
-			break;
+			case 'f': // file
+				numOpts++;
+				file.open(optarg);
+				if (!file.is_open()){
+					LOG(ERROR, "portScanner : Failed to open file " + string(optarg) );
+					break;
+				}
+				while(file >> temp){
+					ipsFromPrefix = PortScannerUtils::getIpsFromPrefix(temp);
+					for (size_t i=0; i < ipsFromPrefix.size(); i++)
+						ips.push_back(ipsFromPrefix[i]);
+					ipsFromPrefix.clear();
+				}
+				file.close();
+				break;
 
-		case 'c': // scan	
-			numOpts++;
-			scanTechniques.push_back(optarg);
-			break;
-			
-		case 'v':
-			numOpts++;
-			data->verbose = true;
-			break;
-			
-		case 'o':
-			numOpts++;
-			data->log_file = optarg;
-			break;
+			case 's': // speedup
+				numOpts++;
+				numOfThreads = atoi(optarg);
+				break;
+
+			case 'c': // scan	
+				numOpts++;
+				scanTechniques.push_back(optarg);
+				break;
+
+			case 'v':
+				numOpts++;
+				data->verbose = true;
+				break;
+
+			case 'o':
+				numOpts++;
+				data->log_file = optarg;
+				break;
 
 		}
 	}
@@ -169,7 +169,7 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 		}
 	}
 
-	
+
 	LOG(DEBUG, "========== Target hosts ==========");
 	for (size_t i=0; i<ips.size(); i++){
 		LOG(DEBUG, ips[i]);
@@ -178,7 +178,7 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 		addr.sin_family = AF_INET;
 		data->ips.push_back(addr);
 	}
-	
+
 	LOG(DEBUG, "========== Target ports ==========");
 	if (ports.size() == 0){
 		LOG(DEBUG, "1-1024 (default)");
@@ -189,7 +189,7 @@ bool parse_args(int argc, char **argv, struct InputData *data)
 			LOG(DEBUG, to_string(ports[i]));
 	}
 	data->ports = ports;
-	
+
 	LOG(DEBUG, "====== Port-Scan Techniques ======");
 	for (size_t i=0; i < scanTechniques.size(); i++){
 		LOG(DEBUG, scanTechniques[i]);
@@ -212,53 +212,73 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 
 	Scan *s;
 	in.sin_family = AF_INET;
-	
-	for(vector<sockaddr_in>::iterator i = data.ips.begin(); i != data.ips.end(); ++i){
+	pool.jobPoolSize = data.ports.size();
+	for(vector<unsigned short>::iterator j = data.ports.begin(); j != data.ports.end(); ++j)
+	{
+		unsigned short port = *j;
+		switch(port)
+		{
+			case SSH:
+			case SMTP:
+			case HTTP:
+			case WHOIS: 
+			case POP:
+			case IMAP:
+				pool.jobPoolSize++;
+				break;
+			default: break;
+		}
+	}
+	pool.jobPoolSize = pool.jobPoolSize * data.ips.size() * data.scanTechniques.size();
+
+	for(vector<sockaddr_in>::iterator i = data.ips.begin(); i != data.ips.end(); ++i)
+	{
 		struct sockaddr_in addr = *i;
-		for(vector<unsigned short>::iterator j = data.ports.begin(); j != data.ports.end(); ++j){
+		for(vector<unsigned short>::iterator j = data.ports.begin(); j != data.ports.end(); ++j)
+		{
 			unsigned short port = *j;
 			addr.sin_port = port;
 			string str = "";
-			switch(port){
-				
-			case SSH :
-				break;
-			case SMTP :
-				break;
-			case HTTP :
-				break;
-			case WHOIS : 
-				s = new WHOISvScan(in, addr, str);
-				pool.queueJob(s);
-				break;
-			case POP :
-				/*				s = new POPvScan(in, addr, str);
-								pool.queueJob(s);*/
-				break;
-			case IMAP :
-				s = new IMAPvScan(in, addr, str);
-				pool.queueJob(s);
-				break;
+			switch(port)
+			{
+				case SSH :
+					break;
+				case SMTP :
+					break;
+				case HTTP :
+					break;
+				case WHOIS : 
+					s = new WHOISvScan(in, addr, str);
+					pool.queueJob(s);
+					break;
+				case POP :
+					/*				s = new POPvScan(in, addr, str);
+									pool.queueJob(s);*/
+					break;
+				case IMAP :
+					s = new IMAPvScan(in, addr, str);
+					pool.queueJob(s);
+					break;
 			}
-			
+
 			for(vector<string>::iterator k = data.scanTechniques.begin(); k != data.scanTechniques.end(); ++k){
 
 				string type = *k;
 				if(type.compare("SYN") == 0){
 					s = new SYNscan(in, addr, type);
-					
+
 				} else if(type.compare("NULL") == 0){
 					s = new NULLscan(in, addr, type);
-					
+
 				} else if(type.compare("FIN") == 0){
 					s = new FINscan(in, addr, type);
-					
+
 				} else if(type.compare("XMAS") == 0){
 					s = new XMASscan(in, addr, type);
-					
+
 				} else if(type.compare("ACK") == 0){
 					s = new ACKscan(in, addr, type);
-					
+
 				} else if(type.compare("UDP") == 0){
 					s = new UDPscan(in, addr, type);
 
@@ -266,7 +286,7 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 					LOG(ERROR, "Scan type " + type + " not found");
 					continue;
 				}
-								
+
 				pool.queueJob(s);
 			}
 		}
@@ -296,7 +316,7 @@ int main (int argc, char **argv)
 	}else{
 		l->addOutputStream(&cout, INFO, string("%F %T"));
 	}
-	
+
 	if(data.log_file.size() > 0){
 		log_file.open(data.log_file, ios::out | ios::app);
 		l->addOutputStream(&log_file, ERROR, string("%F %T"));
@@ -315,12 +335,13 @@ int main (int argc, char **argv)
 	pthread_create(&tid, NULL, PacketScanner::scanForever, (void*)pd);
 
 	/*create Job pool */
+	cout << "Scanning ";
 	JobPool pool(data.numOfThreads);
 	pool.init();
 	jobCreator(pool, data, packetScanner.deviceIp);
 	pool.delPool(false);
 	stsRptr.stopStopwatch();
-	
+
 	/*join the expensive pcap loop thread*/
 	pcap_breakloop(pd);
 	pthread_join(tid, NULL);
