@@ -20,6 +20,8 @@
 #include "FINscan.hpp"
 #include "WHOISvScan.hpp"
 #include "IMAPvScan.hpp"
+#include "SSHvScan.hpp"
+#include "HTTPvScan.hpp"
 
 using namespace std;
 
@@ -239,26 +241,35 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 			unsigned short port = *j;
 			addr.sin_port = port;
 			string str = "";
-			switch(port)
-			{
-				case SSH :
-					break;
-				case SMTP :
-					break;
-				case HTTP :
-					break;
-				case WHOIS : 
-					s = new WHOISvScan(in, addr, str);
-					pool.queueJob(s);
-					break;
-				case POP :
-					/*				s = new POPvScan(in, addr, str);
-									pool.queueJob(s);*/
-					break;
-				case IMAP :
-					s = new IMAPvScan(in, addr, str);
-					pool.queueJob(s);
-					break;
+			switch(port){
+				
+			case SSH :
+				s = new SSHvScan(in, addr, str);
+				pool.queueJob(s);
+				break;
+
+			case SMTP :
+				break;
+
+			case HTTP :
+				s = new HTTPvScan(in, addr, str);
+				pool.queueJob(s);
+				break;
+
+			case WHOIS : 
+				s = new WHOISvScan(in, addr, str);
+				pool.queueJob(s);
+				break;
+
+			case POP :
+				/*				s = new POPvScan(in, addr, str);
+								pool.queueJob(s);*/
+				break;
+
+			case IMAP :
+				s = new IMAPvScan(in, addr, str);
+				pool.queueJob(s);
+				break;
 			}
 
 			for(vector<string>::iterator k = data.scanTechniques.begin(); k != data.scanTechniques.end(); ++k){
@@ -318,7 +329,7 @@ int main (int argc, char **argv)
 	}
 
 	if(data.log_file.size() > 0){
-		log_file.open(data.log_file, ios::out | ios::app);
+		log_file.open(data.log_file, ios::out | ios::trunc);
 		l->addOutputStream(&log_file, ERROR, string("%F %T"));
 	}
 
