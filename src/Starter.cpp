@@ -22,6 +22,8 @@
 #include "IMAPvScan.hpp"
 #include "SSHvScan.hpp"
 #include "HTTPvScan.hpp"
+#include "POPvScan.hpp"
+#include "SMTPvScan.hpp"
 
 using namespace std;
 
@@ -249,6 +251,8 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 				break;
 
 			case SMTP :
+				s = new SMTPvScan(in, addr, str);
+				pool.queueJob(s);
 				break;
 
 			case HTTP :
@@ -262,8 +266,8 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 				break;
 
 			case POP :
-				/*				s = new POPvScan(in, addr, str);
-								pool.queueJob(s);*/
+				s = new POPvScan(in, addr, str);
+				pool.queueJob(s);
 				break;
 
 			case IMAP :

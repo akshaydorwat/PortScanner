@@ -5,14 +5,14 @@
  * Tab Width : 4 
  **/
 
-#include "SSHvScan.hpp"
+#include "SMTPvScan.hpp"
 
-void SSHvScan::createPacket(){
+void SMTPvScan::createPacket(){
 	LOG(WARNING, debugInfo + "Create packet method not implmeneted");
 }
 
 
-bool SSHvScan::init(){
+bool SMTPvScan::init(){
 	int ret;
 	struct timeval time_out;
 	
@@ -58,19 +58,19 @@ bool SSHvScan::init(){
 	return true;
 }
 
-bool SSHvScan::send(){
+bool SMTPvScan::send(){
 	LOG(WARNING, debugInfo + "send method is not implemented");
 	return true;
 }
 
-void SSHvScan::handle(){
+void SMTPvScan::handle(){
 
 	int ret;
 	char buff[BUFFER_SIZE];
 
 	// Initialise the packet and socket
 	if(!init()){
-		LOG(WARNING, debugInfo + "SSH init error");
+		LOG(WARNING, debugInfo + "POP init error");
 		return;
 	}
 	
@@ -78,7 +78,7 @@ void SSHvScan::handle(){
 	for(int i=0 ; i < 1; i++){
 		if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
 			string version = getVersion(buff, ret);
-			LOG(DEBUG, debugInfo + "SSH : " + version);
+			LOG(DEBUG, debugInfo + "POP : " + version);
 			StatsReporter &stsRptr = StatsReporter::getStatsReporter();	
 			stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
 			break;
@@ -86,14 +86,15 @@ void SSHvScan::handle(){
 	}
 }
 
-string SSHvScan::getVersion(const char* buff, int &ret){
+string SMTPvScan::getVersion(const char* buff, int &ret){
 	size_t start;
 	size_t end;
 	string s = string(buff, ret);
 
-	const string temp = "SSH-"; 
+	const string temp = "220 mailserver.sample.com "; 
+	const string temp2 = ";";
 	if((start = s.find(temp)) != string::npos){
-		if((end = s.find("-", temp.length()+1)) != string::npos){
+		if((end = s.find(temp2)) != string::npos){
 			start += temp.length();
 			return s.substr(start, end - start);
 		}else{
@@ -104,6 +105,8 @@ string SSHvScan::getVersion(const char* buff, int &ret){
 	}
 }
 
-void SSHvScan::filterCallback(const u_char *packet){
+void SMTPvScan::filterCallback(const u_char *packet){
 	LOG(WARNING, debugInfo + "This method is not implemented");
 }
+
+
