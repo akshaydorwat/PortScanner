@@ -12,6 +12,8 @@
 #include <string>
 #include <map>
 
+#define SVC_COL 50
+
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,6 +34,13 @@ class PortStatus
 		map<enum SCAN_TECHNIQUE, enum PORT_STATUS> scanStatus;
 		string serviceName;
 		string protocolVersion;
+
+		PortStatus()
+		{
+			port = 0;
+			serviceName = "Unassigned";
+			protocolVersion = "";
+		}
 		
 		string getScanStatus(enum SCAN_TECHNIQUE scanType);
 		string getConclusion();

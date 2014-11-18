@@ -26,6 +26,7 @@ enum POOL_STATE{
 class JobPool{
 public:
 	size_t jobPoolSize;
+	size_t completedJobs;
 
 	JobPool(int size);
 	~JobPool();

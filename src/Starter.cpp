@@ -314,7 +314,6 @@ int main (int argc, char **argv)
 	ofstream log_file;
 	data.verbose = false;
 
-
 	/* parse command line arguments */
 	int ret = parse_args(argc, argv, &data);
 	if(!ret){
@@ -335,6 +334,7 @@ int main (int argc, char **argv)
 
 	/* create stat reporter*/
 	StatsReporter &stsRptr = StatsReporter::getStatsReporter();
+	//stsRptr.restartStopwatch();
 
 	/*Packet scanner*/
 	PacketScanner &packetScanner = PacketScanner::getPacketScanner();
@@ -342,13 +342,17 @@ int main (int argc, char **argv)
 	if (pd == NULL){ 
 		exit(EXIT_FAILURE);
 	}
+
 	pthread_t tid;
 	pthread_create(&tid, NULL, PacketScanner::scanForever, (void*)pd);
 
 	/*create Job pool */
-	cout << "Scanning ";
+	cout << "Scanning : ---------------------------------------------------------------------------------------------------- 0%";
+	cout.flush();
+
 	JobPool pool(data.numOfThreads);
 	pool.init();
+	stsRptr.restartStopwatch();
 	jobCreator(pool, data, packetScanner.deviceIp);
 	pool.delPool(false);
 	stsRptr.stopStopwatch();
@@ -364,7 +368,5 @@ int main (int argc, char **argv)
 	/*free memory*/
 	delete Logger::getInstance();
 	delete UniquePortGenerator::getInstance();
-	//delete PacketScanner::getPacketScanner();
-	//delete StatsReporter::getStatsReporter();
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

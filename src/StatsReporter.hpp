@@ -26,11 +26,13 @@
 
 using namespace std;
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #define PORT_COL 7
 #define SVC_COL 50
 #define RSLT_COL 25
 #define CON_COL 15
 
+///////////////////////////////////////////////////////////////////////////////////////////////////	
 class StatsReporter
 {
 	private:
@@ -68,8 +70,6 @@ class StatsReporter
 		static StatsReporter& getStatsReporter()       // obtain the singleton instance
 		{
 			static StatsReporter stsRptr;
-			stsRptr.startTime = chrono::duration_cast<std::chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
-
 			return stsRptr;
 		}
 
@@ -81,3 +81,4 @@ class StatsReporter
 };
 
 #endif
+///////////////////////////////////////////////////////////////////////////////////////////////////

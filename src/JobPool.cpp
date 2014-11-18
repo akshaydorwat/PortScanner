@@ -6,13 +6,16 @@
  **/
 
 #include "JobPool.hpp"
-#include "iostream"
+
+#include <iostream>
+#include <iomanip>
 
 JobPool::JobPool(int size){
 	numOfThreads = size;
 	state = STOPPED;
 	done = false;
 	jobPoolSize = 0;
+	completedJobs = 0;
 	lastPercentCompleted = 0.0;
 }
 
@@ -133,19 +136,25 @@ void JobPool::run(){
 		// retrieve job from the pool
 		s = pool.front();
 		pool.pop_front();
-		size_t remainingPoolSize = pool.size();
-		double percentCompleted = 100.0 * (jobPoolSize - remainingPoolSize) / (jobPoolSize);
-		if (percentCompleted - lastPercentCompleted >= 1.0)
+		
+		completedJobs++;
+		double percentCompleted = (100.0 * completedJobs) / jobPoolSize;
+		cout << "\rScanning : ";
+		for (double i=0.0; 100.0 - i > 0.001; i+=1.0)
 		{
-			lastPercentCompleted += 1.0;
-			cout << "#";
+			if (percentCompleted - i > 0.001)
+				cout << "#";
+			else
+				cout << "-";
 		}
-		/*if (lastPercentCompleted - 100.0 < 0.1)
-			cout << endl;*/
+		
+		cout << " " << fixed << setprecision(2) << percentCompleted << "%";
+		cout.flush();
+
 		mutex.unlock();
 	
 		// call actual function
-		s->handle();
+		s->handle();	
 
 		//grabage collection 
 		delete s;
