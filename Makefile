@@ -26,7 +26,9 @@ UniquePortGenerator.o\
 WHOISvScan.o\
 IMAPvScan.o\
 SSHvScan.o\
-HTTPvScan.o
+HTTPvScan.o\
+POPvScan.o\
+SMTPvScan.o
 
 
 BIN = portScanner
@@ -43,7 +45,7 @@ $(BIN): $(OBJ)
 	$(CC) $(LDFLAGS) -c $(CPFLAGS) -o $@ $<  
 
 clean:
-	rm -rf $(OBJ) $(BIN) portScanner.tar LOG.log
+	rm -rf $(OBJ) $(BIN) portScanner.tar LOG.log src/*~
 
 tar:
 	tar -cvf portScanner.tar Makefile README src
@@ -55,7 +57,7 @@ run:
 	sudo ./portScanner --log_file LOG.log --ports 22,24,43,80,110,143 --ip 129.79.247.87 --speedup 50 --scan SYN UDP FIN NULL XMAS ACK
 
 service:
-	sudo ./portScanner --ports 43 --file service_ip --speedup 50 --scan SYN
+	sudo ./portScanner --ports 43 --ip 129.79.247.87 --speedup 50 --scan SYN
 
 stress_test:
 	sudo ./portScanner --log_file LOG.log --ports 22,24,80,110,143,43,53,700-1024 --file ip_list --speedup 75 --scan SYN UDP FIN NULL XMAS ACK

@@ -104,7 +104,7 @@ string WHOISvScan::getVersion(const char* buff, int &ret){
 
 	const string temp = "Whois Server Version "; 
 	if((start = s.find(temp)) != string::npos){
-		if((end = s.find("\n", temp.length()+1)) != string::npos){
+		if((end = s.find("\n", start + temp.length()+1)) != string::npos){
 			start += temp.length();
 			return s.substr(start, end - start);
 		}else{

@@ -103,6 +103,7 @@ string IMAPvScan::getVersion(const char* buff, int &ret){
 	size_t end;
 	string s = string(buff, ret);
 	string temp = "IMAP";
+	LOG(DEBUG, "Input to get version : " + s);
 	if((start = s.find(temp)) != string::npos){
 		if((end = s.find(" ", start)) != string::npos){
 			return s.substr(start, end - start);
