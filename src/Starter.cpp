@@ -235,6 +235,11 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 	}
 	pool.jobPoolSize = pool.jobPoolSize * data.ips.size() * data.scanTechniques.size();
 
+	cout << "Scan Jobs         : " << pool.jobPoolSize << endl;
+	cout << "Number of workers : " << data.numOfThreads << endl;
+	cout << "Scanning          : ---------------------------------------------------------------------------------------------------- 0%";
+	cout.flush();
+
 	for(vector<sockaddr_in>::iterator i = data.ips.begin(); i != data.ips.end(); ++i)
 	{
 		struct sockaddr_in addr = *i;
@@ -338,7 +343,6 @@ int main (int argc, char **argv)
 
 	/* create stat reporter*/
 	StatsReporter &stsRptr = StatsReporter::getStatsReporter();
-	//stsRptr.restartStopwatch();
 
 	/*Packet scanner*/
 	PacketScanner &packetScanner = PacketScanner::getPacketScanner();
@@ -351,8 +355,9 @@ int main (int argc, char **argv)
 	pthread_create(&tid, NULL, PacketScanner::scanForever, (void*)pd);
 
 	/*create Job pool */
-	cout << "Scanning : ---------------------------------------------------------------------------------------------------- 0%";
-	cout.flush();
+	for (size_t i=0; i<100; i++)
+		cout << "\n";
+	cout << "For detailed logs refer " << data.log_file << endl;	
 
 	JobPool pool(data.numOfThreads);
 	pool.init();

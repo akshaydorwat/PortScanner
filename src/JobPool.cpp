@@ -138,8 +138,8 @@ void JobPool::run(){
 		pool.pop_front();
 		
 		completedJobs++;
-		double percentCompleted = (100.0 * completedJobs) / jobPoolSize;
-		cout << "\rScanning : ";
+		double percentCompleted = (100.0 * completedJobs) / jobPoolSize;	
+		cout << "\rScanning          : ";
 		for (double i=0.0; 100.0 - i > 0.001; i+=1.0)
 		{
 			if (percentCompleted - i > 0.001)

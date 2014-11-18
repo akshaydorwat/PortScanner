@@ -161,7 +161,8 @@ void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, st
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void StatsReporter::displayReport()
 {
-	cout << endl << "Scan took " << fixed << setprecision(2) << ((endTime - startTime) / 1000.0) << " seconds" << endl;
+	cout << "\rScanning          : #################################################################################################### 100%   " << endl;
+	cout << "Time taken        : " << fixed << setprecision(2) << ((endTime - startTime) / 1000.0) << " seconds" << endl;
 
 	for (map<string, map<string, vector<PortStatus*>>>::iterator ipItr = report.begin(); \
 			ipItr != report.end(); ++ipItr)
