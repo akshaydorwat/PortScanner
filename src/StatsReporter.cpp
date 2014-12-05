@@ -150,11 +150,15 @@ void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, st
 		//if (report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName.size() == 0)
 		//	report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName = svc.size() == 0 ? "Unassigned" : svc;//svcStr;
 		if (svc.size() > 0)
-			report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName = svc;
+		{
+			version = version.size() > SVC_COL - 4 ? version.substr(0, SVC_COL -4) : version;
+			string newSvc = (svc.size() + version.size() > SVC_COL - 4) ? svc.substr(0, SVC_COL -4 -version.size()) : svc;
+			report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName = newSvc + version;
+		}
 	}
 
-	if (version.size() != 0)
-		report[ipAddrStr][oldSts][portStsVctrIdx]->protocolVersion = version;
+	//if (version.size() != 0)
+	//	report[ipAddrStr][oldSts][portStsVctrIdx]->protocolVersion = version;
 	exitMonitor(ipAddrStr + ":" + to_string(port));
 }
 
@@ -208,9 +212,10 @@ void StatsReporter::displayReport()
 					cout << endl << left << setw(PORT_COL) << ("| " + to_string(portStatii[i]->port) + " ");
 
 					// Service Name
-					string v = portStatii[i]->protocolVersion.size() > 0 ? " " + portStatii[i]->protocolVersion + " ": "";
-					string svc = portStatii[i]->serviceName.size() + v.size() > SVC_COL - 4 ? portStatii[i]->serviceName.substr(0, SVC_COL-4-v.size()) : portStatii[i]->serviceName;
-					cout << left << setw(SVC_COL) << ("| " + svc + v);
+					//string v = portStatii[i]->protocolVersion.size() > 0 ? " " + portStatii[i]->protocolVersion + " ": "";
+					//string svc = portStatii[i]->serviceName.size() + v.size() > SVC_COL - 4 ? portStatii[i]->serviceName.substr(0, SVC_COL-4-v.size()) : portStatii[i]->serviceName;
+					string svc = portStatii[i]->serviceName;
+					cout << left << setw(SVC_COL) << ("| " + svc);// + v);
 
 					// Results
 					bool printConclusion = true;

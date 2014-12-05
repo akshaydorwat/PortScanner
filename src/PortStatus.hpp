@@ -33,13 +33,15 @@ class PortStatus
 		uint16_t port;
 		map<enum SCAN_TECHNIQUE, enum PORT_STATUS> scanStatus;
 		string serviceName;
-		string protocolVersion;
+		//string protocolVersion;
 
 		PortStatus()
 		{
 			port = 0;
-			serviceName = "Unassigned";
-			protocolVersion = "";
+			string unassigned = "Unassigned";
+			string blanks(SVC_COL - unassigned.size() - 2, ' ');
+			serviceName = unassigned + blanks;
+			//protocolVersion = "";
 		}
 		
 		string getScanStatus(enum SCAN_TECHNIQUE scanType);

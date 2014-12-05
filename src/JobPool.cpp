@@ -72,10 +72,6 @@ void JobPool::queueJob(Scan *s){
 }
 
 bool JobPool::delPool(bool forceful){
-	
-	int ret;
-	int i;
-
 	// acquire lock
 	mutex.lock();
 	// change state
@@ -90,13 +86,8 @@ bool JobPool::delPool(bool forceful){
 	// wakeup all the threads
 	condVar.broadcast();
 
-	for(i=0; i< numOfThreads; i++ ){
-		ret = pthread_join(threads[i], NULL);
-		if(ret != 0){
-			LOG(ERROR, "Error while joining the thread");
-		}
-	}
-	LOG(DEBUG, "Thread pool deleted sccucessfully");
+	joinAll();
+	LOG(DEBUG, "Thread pool deleted successfully.");
 	return true;
 }
 	
@@ -105,7 +96,7 @@ void JobPool::joinAll(){
 	for(i=0; i< numOfThreads; i++ ){
 		ret = pthread_join(threads[i], NULL);
 		if(ret != 0){
-			LOG(ERROR, "Error while joining the thread");
+			LOG(ERROR, "Error while joining the thread.");
 		}
 	}
 }
