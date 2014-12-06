@@ -76,6 +76,8 @@ void WHOISvScan::handle(){
 
 	int ret;
 	char buff[BUFFER_SIZE];
+	bool flag = false;
+	string version;
 
 	// Initialise the packet and socket
 	if(!init()){
@@ -89,11 +91,18 @@ void WHOISvScan::handle(){
 			if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
 				string version = getVersion(buff, ret);
 				LOG(DEBUG, debugInfo + "WHOIS : " + version);
-				StatsReporter &stsRptr = StatsReporter::getStatsReporter();	
-				stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
+				flag = true;
 				break;
 			}
 		}
+	}
+
+	StatsReporter &stsRptr = StatsReporter::getStatsReporter();
+
+	if(flag){
+		stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
+	}else{
+		stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", "");
 	}
 }
 
