@@ -67,6 +67,8 @@ void SSHvScan::handle(){
 
 	int ret;
 	char buff[BUFFER_SIZE];
+	bool flag = false;
+	string version;
 
 	// Initialise the packet and socket
 	if(!init()){
@@ -77,12 +79,19 @@ void SSHvScan::handle(){
 	// send packet and wait for the response
 	for(int i=0 ; i < 1; i++){
 		if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
-			string version = getVersion(buff, ret);
+			version = getVersion(buff, ret);
 			LOG(DEBUG, debugInfo + "SSH : " + version);
-			StatsReporter &stsRptr = StatsReporter::getStatsReporter();	
-			stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
+			flag = true;
 			break;
 		}
+	}
+
+	StatsReporter &stsRptr = StatsReporter::getStatsReporter();
+
+	if(flag){
+		stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
+	}else{
+		stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", "");
 	}
 }
 

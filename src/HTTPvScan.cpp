@@ -76,6 +76,8 @@ void HTTPvScan::handle(){
 
   	int ret;
 	char buff[BUFFER_SIZE];
+	bool flag = false;
+	string version;
 
 	// Initialise the packet and socket
 	if(!init()){
@@ -87,14 +89,20 @@ void HTTPvScan::handle(){
 	for(int i=0 ; i < MAX_TRY; i++){
 		if(send()){
 			if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
-				string version = getVersion(buff, ret);
-				StatsReporter &stsRptr = StatsReporter::getStatsReporter();	
+				version = getVersion(buff, ret);
 				LOG(DEBUG, debugInfo + "HTTP version : " + version);
-				stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
-				//LOG(DEBUG, debugInfo + "After send HTTP : " + version);
+				flag = true;
 				break;
 			}
 		}
+	}
+
+	StatsReporter &stsRptr = StatsReporter::getStatsReporter();
+
+	if(flag){
+		stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
+	}else{
+		stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", "");
 	}
 }
 
