@@ -152,7 +152,9 @@ void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, st
 		//	report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName = svc.size() == 0 ? "Unassigned" : svc;//svcStr;
 		if (svc.size() > 0 || version.size() > 0)
 		{
+			cout << ipAddrStr << ":" << port << "Received version info [" << version << "]";
 			version = version.size() > SVC_COL - 5 ? " " + version.substr(0, SVC_COL -4) : " " + version;
+			cout << " changed to [" << version << "]" << endl;
 			string newSvc = (svc.size() + version.size() > SVC_COL - 4) ? svc.substr(0, SVC_COL -4 -version.size()) : svc;
 			report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName = newSvc + version;
 		}

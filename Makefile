@@ -54,7 +54,7 @@ test:
 	sudo ./portScanner -v --ports 80 --ip 129.79.247.87 --speedup 50 --scan SYN 
 
 run:
-	sudo ./portScanner --log_file LOG.log --ports 22,24,43,80,110,143 --ip 129.79.247.87 --speedup 50 --scan SYN UDP FIN NULL XMAS ACK
+	sudo ./portScanner --log_file LOG.log --ports 22,24,43,110,143,80 --ip 129.79.247.87 --speedup 50 --scan SYN UDP FIN NULL XMAS ACK
 
 service:
 	sudo ./portScanner --ports 43 --ip 129.79.247.87 --speedup 50 --scan SYN

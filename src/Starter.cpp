@@ -261,9 +261,9 @@ void jobCreator(JobPool &pool, InputData &data, struct sockaddr_in &in){
 				break;
 
 			case HTTP :
-				s = new HTTPvScan(in, addr, str);
-				pool.queueJob(s);
-				break;
+			       s = new HTTPvScan(in, addr, str);
+			       pool.queueJob(s);
+			       break;
 
 			case WHOIS : 
 				s = new WHOISvScan(in, addr, str);

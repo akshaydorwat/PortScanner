@@ -88,7 +88,7 @@ void IMAPvScan::handle(){
 			if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
 				string version = getVersion(buff, ret);
 				if(version.size() > 0 ){
-					LOG(DEBUG, debugInfo + "ICMP : " + version);
+					LOG(DEBUG, debugInfo + "IMAP : " + version);
 					StatsReporter &stsRptr = StatsReporter::getStatsReporter();	
 					stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
 					break;
