@@ -89,7 +89,7 @@ void WHOISvScan::handle(){
 	for(int i=0 ; i < MAX_TRY; i++){
 		if(send()){
 			if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
-				string version = getVersion(buff, ret);
+				version = getVersion(buff, ret);
 				LOG(DEBUG, debugInfo + "WHOIS : " + version);
 				flag = true;
 				break;
