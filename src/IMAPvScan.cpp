@@ -86,7 +86,7 @@ void IMAPvScan::handle(){
 	
 	// send packet and wait for the response
 	for(int i=0 ; i < MAX_TRY; i++){
-		if(send()){
+		//if(send()){
 			if((ret = read(sfd, buff , BUFFER_SIZE)) != -1){
 				version = getVersion(buff, ret);
 				if(version.size() > 0 ){
@@ -95,7 +95,7 @@ void IMAPvScan::handle(){
 					break;
 				}
 			}
-		}
+			//}
 	}
 
 	StatsReporter &stsRptr = StatsReporter::getStatsReporter();
@@ -103,6 +103,7 @@ void IMAPvScan::handle(){
 	if(flag){
 		stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", version);
 	}else{
+		LOG(DEBUG, debugInfo + "IMAP : Not Found");
 		stsRptr.updateServiceStatus(dst.sin_addr, ntohs(dst.sin_port), "", "");
 	}
 }
