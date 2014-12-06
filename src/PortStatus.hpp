@@ -43,6 +43,13 @@ class PortStatus
 			serviceName = unassigned + blanks;
 			//protocolVersion = "";
 		}
+		bool unassignedService()
+		{
+			string unassigned = "Unassigned";
+			string blanks(SVC_COL - unassigned.size() - 2, ' ');
+			string unassignedServiceName = unassigned + blanks;
+			return (serviceName.size() == 0 || serviceName == unassignedServiceName);
+		}
 		
 		string getScanStatus(enum SCAN_TECHNIQUE scanType);
 		string getConclusion();

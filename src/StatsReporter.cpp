@@ -132,7 +132,8 @@ void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, st
 	size_t portStsVctrIdx = getPortStatus(ipAddr, port, oldSts);
 	//PortStatus &portStatus = report[string(inet_ntoa(ipAddr))][oldSts][portStsVctrIdx];
 
-	if (report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName.size() == 0 || report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName == "Unassigned")
+	//if (report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName.size() == 0 || report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName == "Unassigned")
+	if (report[ipAddrStr][oldSts][portStsVctrIdx]->unassignedService())
 	{	
 		if (svc.size() == 0)
 		{
@@ -149,9 +150,9 @@ void StatsReporter::updateServiceStatus(struct in_addr ipAddr, uint16_t port, st
 
 		//if (report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName.size() == 0)
 		//	report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName = svc.size() == 0 ? "Unassigned" : svc;//svcStr;
-		if (svc.size() > 0)
+		if (svc.size() > 0 || version.size() > 0)
 		{
-			version = version.size() > SVC_COL - 4 ? version.substr(0, SVC_COL -4) : version;
+			version = version.size() > SVC_COL - 5 ? " " + version.substr(0, SVC_COL -4) : " " + version;
 			string newSvc = (svc.size() + version.size() > SVC_COL - 4) ? svc.substr(0, SVC_COL -4 -version.size()) : svc;
 			report[ipAddrStr][oldSts][portStsVctrIdx]->serviceName = newSvc + version;
 		}
