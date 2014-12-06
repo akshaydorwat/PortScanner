@@ -1,1 +1,83 @@
-http://www.binarytides.com/dns-query-code-in-c-with-linux-sockets/
+=========================== PROJECT#4 : PORTSCANNER ==============================
+
+Akshay Dorwat					adorwat
+Rohit Khapare					rkhapare
+
+=============================== PROVIDED FILES ===================================
+
+Starter.cpp, Starter.hpp			: contains main(), reads input arguments,
+						  instantiates JobPool and other operatioal elements
+
+PortStatus.cpp, PortStatus.hpp			: Stores status information of a Port
+StatsReporter.cpp, StatsReporter.hpp		: Stores and displays the statistical information
+						  gathered by the portscanner
+
+JobPool.cpp, JobPool.hpp			: spawns necessary number of threads for 
+						  performing scan tasks
+
+PacketScanner.cpp, PacketScanner.hpp		: singleton object that calls pcap_loop,
+						  invokes callbacks registered by scanning threads
+
+PacketFactory.cpp, PacketFactory.hpp		: factory that generates request (scan) packets
+
+Scan.cpp, Scan.cpp				: Absract base class for Scan job.
+SYNscan.cpp, SYNscan.hpp			: Implementation of SYN scan
+FINscan.cpp, FINscan.hpp			: Implementation of FIN scan
+ACKscan.cpp, ACKscan.hpp			: Implementation of ACK scan
+NULLscan.cpp, NULLscan.hpp			: Implementation of NULL scan
+XMASscan.cpp, XMASscan.hpp			: Implementation of XMAS scan
+UDPscan.cpp, UDPscan.hpp			: Implementation of UDP scan
+UniquePortGenerator.cpp, UniquePortGenerator.hpp: Generates unique port for TCP.
+WHOISvScan.cpp, WHOISvScan.hpp			: Get the version of WHOIS service
+IMAPvScan.cpp, IMAPvScan.hpp			: Get the version of IMAP service
+SSHvScan.cpp, SSHvScan.hpp			: Get the version of SSH service
+HTTPvScan.cpp, HTTPvScan.hpp			: Get the version of HTTP service
+POPvScan.cpp, POPvScan.hpp			: Get the version of POP service
+SMTPvScan.cpp, SMTPvScan.hpp			: Get the version of SMTP service
+
+PortScannerUtils.cpp, PortScannerUtils.hpp	: provides utility functions for portscanner
+Logger.cpp, Logger.hpp				: Threadsafe logger
+Mutex.cpp, Mutex.cpp				: Mutex lock
+ConditionVariable.cpp, ConditionVariable.hpp	: Condition variable for mutex
+
+================================ HOW TO COMPILE =====================================
+
+$ make clean && make
+
+================================== How TO RUN =======================================
+
+The generic way to execute the program is as follows ...
+$ sudo ./portScanner --log_file LOG.log --ports <comma separated list of ports> --file <name of file containing target IP's; 1 on each line> --speedup <positive integer> --scan <space separated list of scan methods>
+
+For help, enter the following command
+$ ./portScanner --help
+
+============================== CURRENT FUNCTIONALITY ================================
+
+- Generic Packet factory interface is implmented to create different protocol packets. 
+  In this project it is used to create TCP, UDP and DNS packets.
+- Generic scan abstract class is created to implment job executor pattern. 
+  This pattern also uses the thread pool. Couese grained access is give to control 
+  number of threads in the exector.In default case only 1 thread is used.
+- Unique port generator is implmented to support tcp communication.
+- SYN, FIN, UDP, XMAS, NULL and ACK port scanning techniques are implmented to scan ports.
+- Version scanner is implmented for SSH, IMAP, SMTP, WHOIS, HTTP and POP services
+- DNS query generator is implmented to scan port 53. 
+- PortScanner operates as a singleton object that listens for incoming reponses and
+  invokes the callbacks registered by individual scan threads.
+- StatsReporter (another singleton) gathers the statistics as follows ... 
+  IP-info map       : <key = IP-address 	, value = Port-info map>
+  Port-info map     : <key = Port-Status string , value = PortStatus vector>
+  Port-Status	    : enum of recognized port status viz., OPEN, CLOSED ...
+  PortStatus vector : pointers to PortStatus objects
+  PortStatus object : Port number
+		      Map with <key = Scan-technique , value = Port-Status>
+		      service name + protocol version
+  This information is displayed on standard output at the end of the scanning phase.
+
+
+===================================== CREDITS =======================================
+
+[1] http://www.binarytides.com/dns-query-code-in-c-with-linux-sockets/
+
+=====================================================================================
